@@ -37,10 +37,10 @@ void Database::ensureSchema() {
     CREATE TABLE IF NOT EXISTS budgets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       client_id INTEGER,
-      metros REAL,
       tipo_local TEXT,
-      localidad TEXT,
+      metros REAL,
       tipo_cubierta TEXT,
+      localidad TEXT,
       km REAL,
       dietas INTEGER,
       horas REAL,

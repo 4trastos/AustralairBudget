@@ -20,6 +20,7 @@ void MainWindow::setupUi() {
     leClientName = new QLineEdit; leCompany = new QLineEdit; leContact = new QLineEdit;
     leAddress = new QLineEdit; lePhone = new QLineEdit; leEmail = new QLineEdit;
 
+    // Customer data
     formLayout->addRow("Cliente (nombre):", leClientName);
     formLayout->addRow("Empresa:", leCompany);
     formLayout->addRow("Contacto:", leContact);
@@ -27,19 +28,20 @@ void MainWindow::setupUi() {
     formLayout->addRow("Teléfono:", lePhone);
     formLayout->addRow("Email:", leEmail);
 
-    sbMetros = new QDoubleSpinBox; sbMetros->setRange(0, 1e6); sbMetros->setSuffix(" m²");
+    // Work data
     cbTipoLocal = new QComboBox; cbTipoLocal->addItems({"Nave industrial","Local comercial","Vivienda","Pista de pádel indoor"});
-    cbTipoCubierta = new QComboBox; cbTipoCubierta->addItems({"Chapa","Teja","Hormigón","Otros"});
+    sbMetros = new QDoubleSpinBox; sbMetros->setRange(0, 1e6); sbMetros->setSuffix(" m²");
+    cbTipoCubierta = new QComboBox; cbTipoCubierta->addItems({"Chapa","Teja","Hormigón","Panel Sandwich"});
     sbKM = new QDoubleSpinBox; sbKM->setRange(0,10000); sbKM->setSuffix(" km");
     spDietas = new QSpinBox; spDietas->setRange(0,1000);
     sbHoras = new QDoubleSpinBox; sbHoras->setRange(0,1e5);
     spDias = new QSpinBox; spDias->setRange(0,365);
 
-    formLayout->addRow("Metros cuadrados:", sbMetros);
     formLayout->addRow("Tipo de local:", cbTipoLocal);
+    formLayout->addRow("Metros cuadrados:", sbMetros);
+    formLayout->addRow("Tipo de cubierta:", cbTipoCubierta);
     formLayout->addRow("Localidad:", new QLineEdit); // inline local field
     formLayout->itemAt(formLayout->rowCount()-1)->widget()->setObjectName("leLocalidad");
-    formLayout->addRow("Tipo de cubierta:", cbTipoCubierta);
     formLayout->addRow("KM desplazamiento:", sbKM);
     formLayout->addRow("Dietas (empleados):", spDietas);
     formLayout->addRow("Horas estimadas:", sbHoras);
@@ -78,14 +80,23 @@ void MainWindow::setupUi() {
     connect(btnPDF, &QPushButton::clicked, this, &MainWindow::onExportPDF);
     connect(btnPrint, &QPushButton::clicked, this, &MainWindow::onPrintBudget);
 
+    // Layout para los botones (2 por fila)
+    auto *btnLayout = new QGridLayout;
+    btnLayout->addWidget(btnCalc, 0, 0);
+    btnLayout->addWidget(btnSave, 0, 1);
+    btnLayout->addWidget(btnPDF, 1, 0);
+    btnLayout->addWidget(btnPrint, 1, 1);
+    btnLayout->addWidget(btnEditPrices, 2, 0);
+
     //auto *bottomLayout = new QHBoxLayout;
     auto *leftV = new QVBoxLayout;
     leftV->addLayout(formLayout);
-    leftV->addWidget(btnCalc);
-    leftV->addWidget(btnSave);
-    leftV->addWidget(btnPDF);
-    leftV->addWidget(btnPrint);
-    leftV->addWidget(btnEditPrices);
+    leftV->addLayout(btnLayout);
+    // leftV->addWidget(btnCalc);
+    // leftV->addWidget(btnSave);
+    // leftV->addWidget(btnPDF);
+    // leftV->addWidget(btnPrint);
+    // leftV->addWidget(btnEditPrices);
     leftV->addStretch();
     leftV->addWidget(lbl1); leftV->addWidget(lblTotalNoIVA);
     leftV->addWidget(lbl2); leftV->addWidget(lblTotalConIVA);
@@ -95,9 +106,17 @@ void MainWindow::setupUi() {
     lwBudgets = new QListWidget;
     QPushButton *btnLoad = new QPushButton("Abrir seleccionado");
     connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadSelectedBudget);
+    QPushButton *btnDelete = new QPushButton("Eliminar Seleccionado");
+    connect(btnDelete, &QPushButton::clicked, this, &MainWindow::onDeleteSelectedBudget);
+
+    auto *btnsLayout = new QHBoxLayout();
+    btnsLayout->addWidget(btnLoad);
+    btnsLayout->addWidget(btnDelete);
+
     rightV->addWidget(new QLabel("Presupuestos guardados"));
     rightV->addWidget(lwBudgets);
-    rightV->addWidget(btnLoad);
+    rightV->addLayout(btnsLayout);
+    //rightV->addWidget(btnLoad);
 
     mainLayout->addLayout(leftV, 3);
     mainLayout->addLayout(rightV, 1);
@@ -307,6 +326,35 @@ void MainWindow::onLoadSelectedBudget() {
     }
     onCalculate();
 }
+
+void MainWindow::onDeleteSelectedBudget() {
+    auto *item = lwBudgets->currentItem();
+    if (!item) return;
+
+    int id = item->data(Qt::UserRole).toInt();
+
+    if (QMessageBox::question(this, "Confirmar", "¿Deseas borrar el presupuesto seleccionado?") 
+        == QMessageBox::Yes) 
+    {
+        QSqlQuery q(Database::instance());
+        q.prepare("DELETE FROM budgets WHERE id = ?");
+        q.addBindValue(id);
+        if (!q.exec()) {
+            QMessageBox::warning(this, "Error", "No se pudo borrar el presupuesto: " + q.lastError().text());
+            return;
+        }
+
+        // Borrar materiales asociados
+        QSqlQuery qm(Database::instance());
+        qm.prepare("DELETE FROM materials WHERE budget_id = ?");
+        qm.addBindValue(id);
+        qm.exec();
+
+        delete item; // quitar de la lista
+        QMessageBox::information(this, "Borrado", "Presupuesto eliminado correctamente.");
+    }
+}
+
 
 void MainWindow::onEditPrices() {
     bool ok;

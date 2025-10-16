@@ -30,6 +30,7 @@ private slots:
     void onCalculate();
     void onSaveBudget();
     void onLoadSelectedBudget();
+    void onDeleteSelectedBudget();
     void onNewMaterial();
     void onRemoveMaterial();
     void onEditPrices();
