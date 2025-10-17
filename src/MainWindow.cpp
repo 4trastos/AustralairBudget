@@ -8,6 +8,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     }
     setupUi();
     loadSettings();
+
+    showMaximized();
 }
 
 void MainWindow::setupUi() {

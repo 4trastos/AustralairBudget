@@ -5,7 +5,8 @@ LIB_DIR = incl
 # --- Archivos Fuente ---
 SOURCES = $(SRC_DIR)/main.cpp \
           $(SRC_DIR)/MainWindow.cpp \
-          $(SRC_DIR)/Database.cpp
+          $(SRC_DIR)/Database.cpp \
+		  $(SRC_DIR)/AustralairBudget.cpp	
 
 HEADERS = $(LIB_DIR)/MainWindow.hpp \
           $(LIB_DIR)/Database.hpp \
@@ -46,16 +47,15 @@ LIBS = \
 
 # --- Archivos generados ---
 OBJECTS_SOURCES = $(SOURCES:.cpp=.o)
-MOC_SOURCES = $(LIB_DIR)/MainWindow_moc.cpp
+MOC_SOURCES = $(LIB_DIR)/MainWindow_moc.cpp \
+              $(LIB_DIR)/AustralairBudget_moc.cpp
 OBJECTS_MOC = $(MOC_SOURCES:.cpp=.o)
 RCC_SOURCES = $(RESOURCES:.qrc=_qrc.cpp)
 OBJECTS_RCC = $(RCC_SOURCES:.cpp=.o)
 
 OBJECTS = $(OBJECTS_SOURCES) $(OBJECTS_MOC) $(OBJECTS_RCC)
 
-# ====================================================================
 # --- Reglas principales ---
-# ====================================================================
 
 all: $(TARGET)
 
@@ -68,7 +68,13 @@ $(TARGET): $(OBJECTS)
 	@echo "🧩 Compilando $<..."
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# --- Regla MOC ---
+
 $(LIB_DIR)/MainWindow_moc.cpp: $(LIB_DIR)/MainWindow.hpp
+	@echo "⚙️ Generando MOC para $<..."
+	$(MOC) $< -o $@
+
+$(LIB_DIR)/AustralairBudget_moc.cpp: $(LIB_DIR)/AustralairBudget.hpp
 	@echo "⚙️ Generando MOC para $<..."
 	$(MOC) $< -o $@
 
@@ -76,9 +82,7 @@ $(LIB_DIR)/MainWindow_moc.cpp: $(LIB_DIR)/MainWindow.hpp
 	@echo "📦 Procesando recursos $<..."
 	$(RCC) $< -o $@
 
-# ====================================================================
 # --- Utilidades ---
-# ====================================================================
 
 clean:
 	@echo "🧹 Limpiando archivos intermedios..."
