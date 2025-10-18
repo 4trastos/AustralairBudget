@@ -6,9 +6,9 @@
 # include <QtWidgets>
 # include <QSqlQuery>
 # include <QApplication>
-#include <QtPrintSupport/QPrinter>
-#include <QtPrintSupport/QPrintDialog>
-#include <QtPrintSupport/QPrintPreviewDialog>
+# include <QtPrintSupport/QPrinter>
+# include <QtPrintSupport/QPrintDialog>
+# include <QtPrintSupport/QPrintPreviewDialog>
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -37,20 +37,37 @@ private slots:
     void onPrintBudget();
     void onPrint();
     void onPrintPreview();
+    void onBackToStart();
+    void onDeleteSelectedBudget();
+    // void onDeleteFields();
+    // void refreshBudgetsList();
+    // void recalcClosedBudget();
+    // void onToggleStatus();
+
 private:
     void setupUi();
     void loadSettings();
     double getSettingDouble(const QString &key, double def=0.0);
     QString generateBudgetHtml(int id);
-    // UI widgets
+
+    // --- Variables de estado ----
+    int currentBudgetId = 0;
+    QString currentStatus = "Abierta";
+    
+    // --- Widgets----
     QLineEdit *leClientName, *leCompany, *leContact, *leAddress, *lePhone, *leEmail;
-    QDoubleSpinBox *sbMetros, *sbKM, *sbHoras;
+    QDoubleSpinBox *sbMetros, *sbKM, *sbHoras, *sbLitros;
     QSpinBox *spDietas, *spDias;
-    QComboBox *cbTipoLocal, *cbTipoCubierta;
+    QComboBox *cbTipoLocal, *cbTipoCubierta, *cbZona, *cbDietasNo, cbDietasYes;
     QTableWidget *twMaterials;
-    QPushButton *btnAddMat, *btnRemoveMat, *btnCalc, *btnSave, *btnPDF, *btnPrint;;
+    QPushButton *btnAddMat, *btnRemoveMat, *btnCalc, *btnSave, *btnPDF, *btnPrint, *btnDelFields, *btnToggleStatus, *btnNewBudget;
     QListWidget *lwBudgets;
+
+    // --- Totales ---
     QLabel *lblTotalNoIVA, *lblTotalConIVA;
+    QLabel *lblTotalNoIVA_Abierta, *lblTotalConIVA_Abierta;
+    QLabel *lblTotalNoIVA_Cerrada, *lblTotalConIVA_Cerrada;
+    QLabel *lblCosteEmpresa, *lblBeneficio;
 };
 
 #endif

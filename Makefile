@@ -6,7 +6,8 @@ LIB_DIR = incl
 SOURCES = $(SRC_DIR)/main.cpp \
           $(SRC_DIR)/MainWindow.cpp \
           $(SRC_DIR)/Database.cpp \
-		  $(SRC_DIR)/AustralairBudget.cpp	
+		  $(SRC_DIR)/AustralairBudget.cpp \
+          $(SRC_DIR)/Buttons.cpp
 
 HEADERS = $(LIB_DIR)/MainWindow.hpp \
           $(LIB_DIR)/Database.hpp \

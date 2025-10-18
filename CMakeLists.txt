@@ -12,6 +12,7 @@ set(SRC
     src/MainWindow.cpp
     src/Database.cpp
     src/AustralairBudget.cpp
+    src/Buttons.cpp
     src/resources.qrc
 )
 

@@ -67,7 +67,7 @@ void MainWindow::setupUi() {
     formLayout->addRow("Horas estimadas:", sbHoras);
     formLayout->addRow("Días de trabajo:", spDias);
 
-    // Materials table
+    // --- Tabla materiales ---
     twMaterials = new QTableWidget(0,4);
     twMaterials->setHorizontalHeaderLabels({"Nombre","Cantidad","Precio unit.","Total"});
     twMaterials->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -85,7 +85,7 @@ void MainWindow::setupUi() {
     matWidget->setLayout(matLayout);
     formLayout->addRow("Materiales:", matWidget);
 
-    // Buttons and totals
+    // ---------------------- Botones ----------------------
     btnCalc = new QPushButton("Calcular");
     btnSave = new QPushButton("Guardar presupuesto");
     btnPDF = new QPushButton("Guardar en PDF");
@@ -100,7 +100,7 @@ void MainWindow::setupUi() {
     connect(btnPDF, &QPushButton::clicked, this, &MainWindow::onExportPDF);
     connect(btnPrint, &QPushButton::clicked, this, &MainWindow::onPrintBudget);
 
-    //auto *bottomLayout = new QHBoxLayout;
+    // ---------------------- Left Column ----------------------
     auto *leftV = new QVBoxLayout;
     leftV->addLayout(formLayout);
     leftV->addWidget(btnCalc);
@@ -112,7 +112,41 @@ void MainWindow::setupUi() {
     leftV->addWidget(lbl1); leftV->addWidget(lblTotalNoIVA);
     leftV->addWidget(lbl2); leftV->addWidget(lblTotalConIVA);
 
-    // Right: saved budgets list
+    // ---------------------- Right Column (Presupuestos) ----------------------
+    auto *rightV = new QVBoxLayout;
+    lwBudgets = new QListWidget;
+    QPushButton *btnLoad = new QPushButton("Abrir seleccionado");
+    connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadSelectedBudget);
+    QPushButton *btnDelete = new QPushButton("Eliminar Seleccionado");
+    connect(btnDelete, &QPushButton::clicked, this, &MainWindow::onDeleteSelectedBudget);
+
+    auto *btnsLayout = new QHBoxLayout;
+    btnsLayout->addWidget(btnLoad);
+    btnsLayout->addWidget(btnDelete);
+
+    rightV->addWidget(new QLabel("Presupuestos guardados"));
+    rightV->addWidget(lwBudgets);
+    rightV->addLayout(btnsLayout);
+
+    // ---------------------- Main Layout ----------------------
+    mainLayout->addLayout(leftV, 3);
+    mainLayout->addLayout(rightV, 1);
+    w->setLayout(mainLayout);
+    setCentralWidget(w);
+    setWindowTitle("Australair - Gestor de presupuestos");
+
+    // ---------------------- Cargar presupuestos guardados ----------------------
+    QSqlQuery q(Database::instance());
+    q.exec("SELECT id, created_at FROM budgets ORDER BY created_at DESC");
+    while (q.next()) {
+        int id = q.value(0).toInt();
+        QString ts = q.value(1).toString();
+        auto *it = new QListWidgetItem(QString::number(id) + " - " + ts);
+        it->setData(Qt::UserRole, id);
+        lwBudgets->addItem(it);
+    }
+
+    /* // Right: saved budgets list
     auto *rightV = new QVBoxLayout;
     lwBudgets = new QListWidget;
     QPushButton *btnLoad = new QPushButton("Abrir seleccionado");
@@ -137,7 +171,7 @@ void MainWindow::setupUi() {
         auto *it = new QListWidgetItem(QString::number(id) + " - " + ts);
         it->setData(Qt::UserRole, id);
         lwBudgets->addItem(it);
-    }
+    } */
 }
 
 double MainWindow::getSettingDouble(const QString &key, double def) {
@@ -156,7 +190,7 @@ void MainWindow::loadSettings() {
     // nothing to do now, will read when calculating
 }
 
-void MainWindow::onNewMaterial() {
+/* void MainWindow::onNewMaterial() {
     int r = twMaterials->rowCount();
     twMaterials->insertRow(r);
     twMaterials->setItem(r,0, new QTableWidgetItem("Nombre"));
@@ -170,7 +204,7 @@ void MainWindow::onRemoveMaterial() {
     if (items.isEmpty()) return;
     int row = items.first()->row();
     twMaterials->removeRow(row);
-}
+} */
 
 void MainWindow::onCalculate() {
     double base = getSettingDouble("price_base", 10.0);
