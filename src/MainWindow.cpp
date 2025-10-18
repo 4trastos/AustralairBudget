@@ -218,6 +218,12 @@ void MainWindow::setupUi() {
     connect(btnPrint, &QPushButton::clicked, this, &MainWindow::onPrintBudget);
     connect(btnStart, &QPushButton::clicked, this, &MainWindow::onBackToStart);
 
+    connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(sbHoras, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(spDietas, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(spDiasDieta, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(twMaterials, &QTableWidget::itemChanged, this, &MainWindow::onCalculate);
+
     // ---------------------- Bloque de botones ----------------------
     auto *colLeft = new QVBoxLayout;
     colLeft->addWidget(btnCalc);
@@ -303,14 +309,6 @@ void MainWindow::setupUi() {
 
     // ---------------------- Cargar presupuestos guardados ----------------------
     QSqlQuery q(Database::instance());
-    // q.exec("SELECT id, created_at FROM budgets ORDER BY created_at DESC");
-    // while (q.next()) {
-    //     int id = q.value(0).toInt();
-    //     QString ts = q.value(1).toString();
-    //     auto *it = new QListWidgetItem(QString::number(id) + " - " + ts);
-    //     it->setData(Qt::UserRole, id);
-    //     lwBudgets->addItem(it);
-    // }
     q.exec("SELECT id, created_at, status FROM budgets ORDER BY created_at DESC");
     while (q.next()) {
         int id = q.value(0).toInt();
@@ -339,7 +337,7 @@ void MainWindow::loadSettings() {
     // nothing to do now, will read when calculating
 }
 
-void MainWindow::onCalculate() {
+/* void MainWindow::onCalculate() {
     double base = getSettingDouble("price_base", 10.0);
     double incr = getSettingDouble("increment_per_field", 5.0);
     double iva = getSettingDouble("iva_pct", 21.0);
@@ -374,7 +372,102 @@ void MainWindow::onCalculate() {
     double totalConIva = total * (1.0 + iva/100.0);
     lblTotalNoIVA->setText(QString::number(total, 'f', 2) + " €");
     lblTotalConIVA->setText(QString::number(totalConIva, 'f', 2) + " €");
+} */
+
+void MainWindow::onCalculate() {
+    // --- Cargar precios desde archivo ---
+    QMap<QString,double> prices = loadPricesFromFile(QCoreApplication::applicationDirPath() + "/prices.txt");
+    double iva = getSettingDouble("iva_pct", 21.0);
+
+    double total = 0.0;
+
+    // --- Sumar materiales ---
+    for (int r=0; r<twMaterials->rowCount(); ++r) {
+        QTableWidgetItem *qtyItem = twMaterials->item(r,1);
+        QTableWidgetItem *priceItem = twMaterials->item(r,2);
+        QTableWidgetItem *totalItem = twMaterials->item(r,3);
+
+        double qty = qtyItem ? qtyItem->text().toDouble() : 0.0;
+        double up  = priceItem ? priceItem->text().toDouble() : 0.0;
+        double line = qty * up;
+
+        if (totalItem) totalItem->setText(QString::number(line,'f',2));
+        total += line;
+    }
+
+    // --- Coste combustible ---
+    double fuelPrice = prices.value("fuel", 1.4); // €/litro
+    double litrosConsumidos = sbKM->value() * 0.1; // 10 L/100 km
+    total += litrosConsumidos * fuelPrice;
+
+    // --- Dietas ---
+    double dietaPrice = prices.value("dieta", 300);
+    total += spDietas->value() * spDiasDieta->value() * dietaPrice;
+
+    // --- Horas de trabajo ---
+    double horaPrice = prices.value("hora_trabajo", 80);
+    total += sbHoras->value() * horaPrice;
+
+    // --- Total con IVA ---
+    double totalConIva = total * (1.0 + iva/100.0);
+    lblTotalNoIVA->setText(QString::number(total, 'f', 2) + " €");
+    lblTotalConIVA->setText(QString::number(totalConIva, 'f', 2) + " €");
 }
+
+
+/* void MainWindow::onCalculate() {
+    // --- Cargar precios desde archivo ---
+    QMap<QString,double> prices = loadPricesFromFile(QCoreApplication::applicationDirPath() + "/prices.txt");
+
+    double base = getSettingDouble("price_base", 10.0);
+    double incr = getSettingDouble("increment_per_field", 5.0);
+    double iva = getSettingDouble("iva_pct", 21.0);
+
+    // --- Contar campos llenos (apartados) ---
+    int count = 0;
+    if (!leClientName->text().isEmpty()) count++;
+    if (sbMetros->value() > 0) count++;
+    if (!cbTipoLocal->currentText().isEmpty()) count++;
+    if (!leLocalidadObra->text().isEmpty()) count++;
+    if (!cbTipoCubierta->currentText().isEmpty()) count++;
+    if (!cbZona->currentText().isEmpty()) count++;
+    if (sbKM->value() > 0) count++;
+    if (sbLitros->value() > 0) count++;
+    if (spDietas->value() > 0) count++;
+    if (spDiasDieta->value() > 0) count++;
+    if (twMaterials->rowCount() > 0) count++;
+    if (sbHoras->value() > 0) count++;
+    if (spDias->value() > 0) count++;
+
+    double total = base + (count * incr);
+
+    // --- Sumar materiales ---
+    for (int r=0; r<twMaterials->rowCount(); ++r) {
+        double qty = twMaterials->item(r,1)->text().toDouble();
+        double up = twMaterials->item(r,2)->text().toDouble();
+        double line = qty * up;
+        twMaterials->item(r,3)->setText(QString::number(line, 'f', 2));
+        total += line;
+    }
+
+    // --- Añadir costes de fuel ---
+    double fuelPrice = prices.value("fuel", 1.4); // €/litro
+    double litrosConsumidos = sbKM->value() * 0.1; // 10 L/100 km
+    total += litrosConsumidos * fuelPrice;
+
+    // Dieta: spDietas * spDiasDieta * precio_unitario
+    double dietaPrice = prices.value("dieta", 300);
+    total += spDietas->value() * spDiasDieta->value() * dietaPrice;
+
+    // Hora de trabajo: sbHoras * precio_unitario
+    double horaPrice = prices.value("hora_trabajo", 80);
+    total += sbHoras->value() * horaPrice;
+
+    double totalConIva = total * (1.0 + iva/100.0);
+    lblTotalNoIVA->setText(QString::number(total, 'f', 2) + " €");
+    lblTotalConIVA->setText(QString::number(totalConIva, 'f', 2) + " €");
+}
+ */
 
 void MainWindow::onSaveBudget() {
     // grab client -> insert or reuse
