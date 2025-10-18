@@ -16,6 +16,7 @@ set(SRC
     src/Printer.cpp
     src/ExportPdf.cpp
     src/StatusWork.cpp
+    src/Fuel.cpp
     src/resources.qrc
 )
 

@@ -40,8 +40,10 @@ private slots:
     void onBackToStart();
     void onDeleteSelectedBudget();
     void onDeleteFields();
-    void refreshBudgetsList();  // FALTA POR IMPLEMENTAR
+    void refreshBudgetsList();
     void onToggleStatus();
+    void updateDistanceAndFuel();
+    void updateDietasStatus();
     // void recalcClosedBudget();
 
 private:
@@ -62,6 +64,7 @@ private:
     QTableWidget *twMaterials;
     QPushButton *btnAddMat, *btnRemoveMat, *btnCalc, *btnSave, *btnPDF, *btnPrint, *btnDelFields, *btnToggleStatus, *btnNewBudget, *btnStart;
     QListWidget *lwBudgets;
+    QRadioButton *rbDietasSi, *rbDietasNo;
 
     // --- Totales ---
     QLabel *lblTotalNoIVA, *lblTotalConIVA;

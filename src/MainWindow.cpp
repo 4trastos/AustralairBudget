@@ -69,6 +69,63 @@ void MainWindow::setupUi() {
 
     // --- Bloque Dietas (Sí/No) ---
     QHBoxLayout *dietasLayout = new QHBoxLayout;
+    rbDietasSi = new QRadioButton("Sí");   // declarados como miembros de la clase
+    rbDietasNo = new QRadioButton("No");
+    rbDietasNo->setChecked(true);
+
+    dietasLayout->addWidget(rbDietasSi);
+    dietasLayout->addWidget(rbDietasNo);
+
+    QWidget *dietasWidget = new QWidget;
+    dietasWidget->setLayout(dietasLayout);
+
+    formLayout->addRow("Dietas:", dietasWidget);
+    formLayout->addRow("Empleados (dieta):", spDietas);
+    formLayout->addRow("Días (dieta):", spDiasDieta);
+
+    // --- Desactivar inicialmente ---
+    spDietas->setEnabled(false);
+    spDiasDieta->setEnabled(false);
+
+    // --- Conexión para controlar dietas ---
+    connect(rbDietasSi, &QRadioButton::toggled, this, [this](bool checked){
+        spDietas->setEnabled(checked);
+        spDiasDieta->setEnabled(checked);
+    });
+
+    // --- Conexión para controlar según zona ---
+    connect(cbZona, &QComboBox::currentTextChanged, this, [this](const QString &zona){
+        if (zona == "Zona Centro") {
+            // Zona Centro: dietas siempre desactivadas
+            rbDietasSi->setChecked(false);
+            rbDietasSi->setEnabled(false);
+            rbDietasNo->setChecked(true);
+            rbDietasNo->setEnabled(false);
+            spDietas->setEnabled(false);
+            spDiasDieta->setEnabled(false);
+        } else {
+            // Otras Zonas: dietas habilitadas
+            rbDietasSi->setEnabled(true);
+            rbDietasNo->setEnabled(true);
+            spDietas->setEnabled(rbDietasSi->isChecked());
+            spDiasDieta->setEnabled(rbDietasSi->isChecked());
+        }
+    });
+
+
+    // --- Conexión para Kilometros / Combustible ---
+    connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+        this, &MainWindow::updateDistanceAndFuel);
+
+
+    /* // --- Campos proyecto básicos ---
+    formLayout->addRow("Tipo de local:", cbTipoLocal);
+    formLayout->addRow("Metros cuadrados:", sbMetros);
+    formLayout->addRow("Tipo de cubierta:", cbTipoCubierta);
+    formLayout->addRow("Zona:", cbZona);
+
+    // --- Bloque Dietas (Sí/No) ---
+    QHBoxLayout *dietasLayout = new QHBoxLayout;
     QRadioButton *rbDietasSi = new QRadioButton("Sí");
     QRadioButton *rbDietasNo = new QRadioButton("No");
     rbDietasNo->setChecked(true);
@@ -81,15 +138,19 @@ void MainWindow::setupUi() {
     formLayout->addRow("Empleados (dieta):", spDietas);
     formLayout->addRow("Días (dieta):", spDiasDieta);
 
-    // Desactivar inicialmente
+    // --- Desactivar inicialmente ---
     spDietas->setEnabled(false);
     spDiasDieta->setEnabled(false);
 
-    // Conexión para activar/desactivar dietas
+    // --- Conexión para activar/desactivar dietas y Kilometros / Combustible ---
     connect(rbDietasSi, &QRadioButton::toggled, this, [this](bool checked){
         spDietas->setEnabled(checked);
         spDiasDieta->setEnabled(checked);
-    });
+    }); */
+
+    // --- Conexión para Kilometros / Combustible ---
+    connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+        this, &MainWindow::updateDistanceAndFuel);
 
     // --- Campos restantes ---
     formLayout->addRow("Localidad:", leLocalidadObra);
@@ -149,18 +210,18 @@ void MainWindow::setupUi() {
     colRight->addWidget(btnPrint);
     colRight->addWidget(btnStart);
 
-    // Reducir espacio entre botones
+    // --- Reducir espacio entre botones ---
     colLeft->setSpacing(6);
     colRight->setSpacing(6);
 
-    // Contenedor para las dos columnas
+    // --- Contenedor para las dos columnas ---
     auto *buttonsGrid = new QHBoxLayout;
     buttonsGrid->addLayout(colLeft);
     buttonsGrid->addSpacing(20);
     buttonsGrid->addLayout(colRight);
     buttonsGrid->setContentsMargins(0, 0, 0, 0);
 
-    // Agrupar botones en bloque con margen visual
+    // --- Agrupar botones en bloque con margen visual ---
     auto *buttonsGroup = new QGroupBox("Acciones");
     auto *buttonsGroupLayout = new QVBoxLayout(buttonsGroup);
     buttonsGroupLayout->addLayout(buttonsGrid);
