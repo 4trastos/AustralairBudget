@@ -13,7 +13,7 @@ AustralairBudget::AustralairBudget(QWidget *parent) : QWidget(parent) {
 
     // Logo
     lblLogo = new QLabel(this);
-    QPixmap pix(":/resources/logo.png");
+    QPixmap pix(":/images/logo.png");
     lblLogo->setPixmap(pix.scaled(288, 29, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     lblLogo->setAlignment(Qt::AlignCenter);
 

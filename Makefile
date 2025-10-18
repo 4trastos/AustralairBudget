@@ -1,6 +1,7 @@
 TARGET = australair
 SRC_DIR = src
 LIB_DIR = incl
+RESOURCES = resources.qrc
 
 # --- Archivos Fuente ---
 SOURCES = $(SRC_DIR)/main.cpp \
@@ -16,8 +17,6 @@ SOURCES = $(SRC_DIR)/main.cpp \
 HEADERS = $(LIB_DIR)/MainWindow.hpp \
           $(LIB_DIR)/Database.hpp \
           $(LIB_DIR)/AustralairBudget.hpp
-
-RESOURCES = $(SRC_DIR)/resources.qrc
 
 # --- Variables de Qt y Herramientas ---
 QT_VER ?= 6

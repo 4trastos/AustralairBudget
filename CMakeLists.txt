@@ -17,7 +17,6 @@ set(SRC
     src/ExportPdf.cpp
     src/StatusWork.cpp
     src/Fuel.cpp
-    src/resources.qrc
 )
 
 set(HDR
@@ -34,7 +33,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Recursos
-qt6_add_resources(RESOURCES_RCC src/resources.qrc)
+qt6_add_resources(RESOURCES_RCC resources.qrc)
 target_sources(australair PRIVATE ${RESOURCES_RCC})
 
 # Librerías
