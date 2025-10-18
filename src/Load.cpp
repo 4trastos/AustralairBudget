@@ -2,6 +2,26 @@
 #include "Database.hpp"
 #include "MainWindow.hpp"
 
+QMap<QString, double> MainWindow::loadPricesFromFile(const QString &filename)
+{
+    QMap<QString, double> prices;
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return prices;
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+        if (line.isEmpty()) continue;
+        QStringList parts = line.split(';');
+        if (parts.size() != 2) continue;
+        QString name = parts[0].trimmed().toLower();
+        double price = parts[1].toDouble();
+        prices[name] = price;
+    }
+    return prices;
+}
+
 QMap<QString, double> MainWindow::loadMaterialsFromFile(const QString &filename)
 {
     QMap<QString, double> materials;

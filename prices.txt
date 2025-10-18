@@ -1,0 +1,3 @@
+fuel;1.40
+dieta;300
+hora_trabajo;80

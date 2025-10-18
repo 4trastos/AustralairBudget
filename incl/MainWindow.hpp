@@ -51,6 +51,7 @@ private:
     double getSettingDouble(const QString &key, double def=0.0);
     QString generateBudgetHtml(int id);
     QMap<QString, double> loadMaterialsFromFile(const QString &filename);
+    QMap<QString, double> loadPricesFromFile(const QString &filename);
     QMap<QString, double> materialsMap;
     void onMaterialChanged(QTableWidgetItem *item);
 
