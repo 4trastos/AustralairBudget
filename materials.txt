@@ -1,5 +1,8 @@
-TBS,2500
-Conductos,200
-Fontaneria,500
-Electricidad,350
-Mandos,680
+TBS;2500
+Coolair;1800
+CW3;4200
+Conductos;200
+Fontanería;500
+Electricidad;350
+Magiq-touch;680
+Plataforma Elevadora;340

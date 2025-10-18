@@ -128,33 +128,15 @@ void MainWindow::setupUi() {
     formLayout->addRow("Horas estimadas:", sbHoras);
     formLayout->addRow("Días de trabajo:", spDias); // días generales
 
-
-    // --- Tabla materiales ---
-    twMaterials = new QTableWidget(0,4);
-    twMaterials->setHorizontalHeaderLabels({"Nombre","Cantidad","Precio unit.","Total"});
-    twMaterials->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    btnAddMat = new QPushButton("Añadir material");
-    btnRemoveMat = new QPushButton("Eliminar material");
-    connect(btnAddMat, &QPushButton::clicked, this, &MainWindow::onNewMaterial);
-    connect(btnRemoveMat, &QPushButton::clicked, this, &MainWindow::onRemoveMaterial);
-
-    QWidget *matWidget = new QWidget;
-    auto *matLayout = new QVBoxLayout;
-    matLayout->addWidget(twMaterials);
-    auto *matBtns = new QHBoxLayout;
-    matBtns->addWidget(btnAddMat); matBtns->addWidget(btnRemoveMat);
-    matLayout->addLayout(matBtns);
-    matWidget->setLayout(matLayout);
-    formLayout->addRow("Materiales:", matWidget);
-
-/* 
     // --- Tabla materiales ---
     twMaterials = new QTableWidget(0, 4);
     twMaterials->setHorizontalHeaderLabels({"Nombre", "Cantidad", "Precio unit.", "Total"});
     twMaterials->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     // --- Cargar materiales desde archivo ---
-    QMap<QString, double> materialsMap = loadMaterialsFromFile("materials.txt");
+    //QMap<QString, double> materialsMap = loadMaterialsFromFile("/materials.txt");
+    QMap<QString, double> materialsMap = loadMaterialsFromFile(QCoreApplication::applicationDirPath() + "/materials.txt");
+
 
     // --- Combobox para seleccionar materiales ---
     cbMaterials = new QComboBox;
@@ -214,7 +196,6 @@ void MainWindow::setupUi() {
 
     formLayout->addRow("Materiales:", matWidget);
 
- */
 
     // ---------------------- Botones ----------------------
     btnCalc = new QPushButton("Calcular");

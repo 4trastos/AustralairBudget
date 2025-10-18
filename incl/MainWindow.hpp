@@ -44,13 +44,16 @@ private slots:
     void onToggleStatus();
     void updateDistanceAndFuel();
     void updateDietasStatus();
-    // void recalcClosedBudget();
 
 private:
     void setupUi();
     void loadSettings();
     double getSettingDouble(const QString &key, double def=0.0);
     QString generateBudgetHtml(int id);
+    QMap<QString, double> loadMaterialsFromFile(const QString &filename);
+    QMap<QString, double> materialsMap;
+    void onMaterialChanged(QTableWidgetItem *item);
+
 
     // --- Variables de estado ----
     int currentBudgetId = 0;
@@ -60,7 +63,7 @@ private:
     QLineEdit *leClientName, *leCompany, *leContact, *leAddress, *lePhone, *leEmail, *leLocalidadObra;
     QDoubleSpinBox *sbMetros, *sbKM, *sbHoras, *sbLitros;
     QSpinBox *spDietas, *spDias, *spDiasDieta;
-    QComboBox *cbTipoLocal, *cbTipoCubierta, *cbZona, *cbDietasNo, cbDietasYes;
+    QComboBox *cbTipoLocal, *cbTipoCubierta, *cbZona, *cbDietasNo, cbDietasYes, *cbMaterials;
     QTableWidget *twMaterials;
     QPushButton *btnAddMat, *btnRemoveMat, *btnCalc, *btnSave, *btnPDF, *btnPrint, *btnDelFields, *btnToggleStatus, *btnNewBudget, *btnStart;
     QListWidget *lwBudgets;

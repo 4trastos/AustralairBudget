@@ -17,6 +17,7 @@ set(SRC
     src/ExportPdf.cpp
     src/StatusWork.cpp
     src/Fuel.cpp
+    src/Load.cpp
 )
 
 set(HDR

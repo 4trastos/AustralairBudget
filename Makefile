@@ -12,7 +12,8 @@ SOURCES = $(SRC_DIR)/main.cpp \
           $(SRC_DIR)/Printer.cpp \
           $(SRC_DIR)/ExportPdf.cpp \
           $(SRC_DIR)/StatusWork.cpp \
-          $(SRC_DIR)/Fuel.cpp
+          $(SRC_DIR)/Fuel.cpp \
+          $(SRC_DIR)/Load.cpp
 
 HEADERS = $(LIB_DIR)/MainWindow.hpp \
           $(LIB_DIR)/Database.hpp \
