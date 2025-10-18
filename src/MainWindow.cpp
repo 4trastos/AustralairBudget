@@ -123,10 +123,14 @@ void MainWindow::setupUi() {
     btnPDF = new QPushButton("Guardar en PDF");
     btnPrint = new QPushButton("Imprimir presupuesto");
     btnStart = new QPushButton("Mantenimientos");
-    QLabel *lbl1 = new QLabel("Total sin IVA:"); lblTotalNoIVA = new QLabel("0.00 €");
-    QLabel *lbl2 = new QLabel("Total con IVA (21%):"); lblTotalConIVA = new QLabel("0.00 €");
     QPushButton *btnEditPrices = new QPushButton("Editar precios base");
 
+    QLabel *lbl1 = new QLabel("Total sin IVA:");
+    lblTotalNoIVA = new QLabel("0.00 €");
+    QLabel *lbl2 = new QLabel("Total con IVA (21%):");
+    lblTotalConIVA = new QLabel("0.00 €");
+
+    // ---------------------- Conexiones ----------------------
     connect(btnCalc, &QPushButton::clicked, this, &MainWindow::onCalculate);
     connect(btnSave, &QPushButton::clicked, this, &MainWindow::onSaveBudget);
     connect(btnEditPrices, &QPushButton::clicked, this, &MainWindow::onEditPrices);
@@ -134,18 +138,49 @@ void MainWindow::setupUi() {
     connect(btnPrint, &QPushButton::clicked, this, &MainWindow::onPrintBudget);
     connect(btnStart, &QPushButton::clicked, this, &MainWindow::onBackToStart);
 
-    // ---------------------- Left Column ----------------------
+    // ---------------------- Bloque de botones ----------------------
+    auto *colLeft = new QVBoxLayout;
+    colLeft->addWidget(btnCalc);
+    colLeft->addWidget(btnPDF);
+    colLeft->addWidget(btnEditPrices);
+
+    auto *colRight = new QVBoxLayout;
+    colRight->addWidget(btnSave);
+    colRight->addWidget(btnPrint);
+    colRight->addWidget(btnStart);
+
+    // Reducir espacio entre botones
+    colLeft->setSpacing(6);
+    colRight->setSpacing(6);
+
+    // Contenedor para las dos columnas
+    auto *buttonsGrid = new QHBoxLayout;
+    buttonsGrid->addLayout(colLeft);
+    buttonsGrid->addSpacing(20);
+    buttonsGrid->addLayout(colRight);
+    buttonsGrid->setContentsMargins(0, 0, 0, 0);
+
+    // Agrupar botones en bloque con margen visual
+    auto *buttonsGroup = new QGroupBox("Acciones");
+    auto *buttonsGroupLayout = new QVBoxLayout(buttonsGroup);
+    buttonsGroupLayout->addLayout(buttonsGrid);
+    buttonsGroupLayout->setContentsMargins(10, 10, 10, 10);
+
+    // ---------------------- Bloque de resultados ----------------------
+    auto *totalsGroup = new QGroupBox("Resumen de presupuesto");
+    auto *totalsLayout = new QGridLayout(totalsGroup);
+    totalsLayout->addWidget(lbl1, 0, 0, Qt::AlignRight);
+    totalsLayout->addWidget(lblTotalNoIVA, 0, 1, Qt::AlignLeft);
+    totalsLayout->addWidget(lbl2, 1, 0, Qt::AlignRight);
+    totalsLayout->addWidget(lblTotalConIVA, 1, 1, Qt::AlignLeft);
+    totalsLayout->setContentsMargins(10, 10, 10, 10);
+
+    // ---------------------- Layout principal (izquierda) ----------------------
     auto *leftV = new QVBoxLayout;
     leftV->addLayout(formLayout);
-    leftV->addWidget(btnCalc);
-    leftV->addWidget(btnSave);
-    leftV->addWidget(btnPDF);
-    leftV->addWidget(btnPrint);
-    leftV->addWidget(btnEditPrices);
-    leftV->addWidget(btnStart);
+    leftV->addWidget(buttonsGroup);
+    leftV->addWidget(totalsGroup);
     leftV->addStretch();
-    leftV->addWidget(lbl1); leftV->addWidget(lblTotalNoIVA);
-    leftV->addWidget(lbl2); leftV->addWidget(lblTotalConIVA);
 
     // ---------------------- Right Column (Presupuestos) ----------------------
     auto *rightV = new QVBoxLayout;
