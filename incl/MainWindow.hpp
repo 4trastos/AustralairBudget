@@ -55,12 +55,12 @@ private:
     QString currentStatus = "Abierta";
     
     // --- Widgets----
-    QLineEdit *leClientName, *leCompany, *leContact, *leAddress, *lePhone, *leEmail;
+    QLineEdit *leClientName, *leCompany, *leContact, *leAddress, *lePhone, *leEmail, *leLocalidadObra;
     QDoubleSpinBox *sbMetros, *sbKM, *sbHoras, *sbLitros;
-    QSpinBox *spDietas, *spDias;
+    QSpinBox *spDietas, *spDias, *spDiasDieta;
     QComboBox *cbTipoLocal, *cbTipoCubierta, *cbZona, *cbDietasNo, cbDietasYes;
     QTableWidget *twMaterials;
-    QPushButton *btnAddMat, *btnRemoveMat, *btnCalc, *btnSave, *btnPDF, *btnPrint, *btnDelFields, *btnToggleStatus, *btnNewBudget;
+    QPushButton *btnAddMat, *btnRemoveMat, *btnCalc, *btnSave, *btnPDF, *btnPrint, *btnDelFields, *btnToggleStatus, *btnNewBudget, *btnStart;
     QListWidget *lwBudgets;
 
     // --- Totales ---

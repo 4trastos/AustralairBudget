@@ -48,24 +48,56 @@ void MainWindow::setupUi() {
     blueLine->setStyleSheet("color: #3498DB; background-color: #3498DB; max-height: 3px;");
     formLayout->addRow(blueLine);
 
-    // ---------------------- Campos proyecto (pares con columnas iguales) ----------------------
+    // ---------------------- Campos proyecto ----------------------
     sbMetros = new QDoubleSpinBox; sbMetros->setRange(0, 1e6); sbMetros->setSuffix(" m²");
-    cbTipoLocal = new QComboBox; cbTipoLocal->addItems({"Nave industrial","Local comercial","Vivienda","Pista de pádel indoor"});
-    cbTipoCubierta = new QComboBox; cbTipoCubierta->addItems({"Chapa","Teja","Hormigón","Otros"});
+    cbTipoLocal = new QComboBox; cbTipoLocal->addItems({"Nave industrial","Local comercial","Vivienda","Complejo Deportivo"});
+    cbTipoCubierta = new QComboBox; cbTipoCubierta->addItems({"Chapa","Teja","Cubierta plana","Panel sandwich", "Uralita"});
     sbKM = new QDoubleSpinBox; sbKM->setRange(0,10000); sbKM->setSuffix(" km");
-    spDietas = new QSpinBox; spDietas->setRange(0,1000);
+    sbLitros = new QDoubleSpinBox; sbLitros->setRange(0,10000); sbLitros->setSuffix(" lts");
     sbHoras = new QDoubleSpinBox; sbHoras->setRange(0,1e5);
-    spDias = new QSpinBox; spDias->setRange(0,365);
+    spDietas = new QSpinBox; spDietas->setRange(0,1000);
+    spDiasDieta = new QSpinBox; spDiasDieta->setRange(0,365); // días asociados a dietas
+    spDias = new QSpinBox; spDias->setRange(0,365); // días de trabajo generales
+    cbZona = new QComboBox; cbZona->addItems({"Zona Centro","Otras Zonas"});
+    leLocalidadObra = new QLineEdit;
 
-    formLayout->addRow("Metros cuadrados:", sbMetros);
+    // --- Campos proyecto básicos ---
     formLayout->addRow("Tipo de local:", cbTipoLocal);
-    formLayout->addRow("Localidad:", new QLineEdit); // inline local field
-    formLayout->itemAt(formLayout->rowCount()-1)->widget()->setObjectName("leLocalidad");
+    formLayout->addRow("Metros cuadrados:", sbMetros);
     formLayout->addRow("Tipo de cubierta:", cbTipoCubierta);
+    formLayout->addRow("Zona:", cbZona);
+
+    // --- Bloque Dietas (Sí/No) ---
+    QHBoxLayout *dietasLayout = new QHBoxLayout;
+    QRadioButton *rbDietasSi = new QRadioButton("Sí");
+    QRadioButton *rbDietasNo = new QRadioButton("No");
+    rbDietasNo->setChecked(true);
+    dietasLayout->addWidget(rbDietasSi);
+    dietasLayout->addWidget(rbDietasNo);
+    QWidget *dietasWidget = new QWidget;
+    dietasWidget->setLayout(dietasLayout);
+
+    formLayout->addRow("Dietas:", dietasWidget);
+    formLayout->addRow("Empleados (dieta):", spDietas);
+    formLayout->addRow("Días (dieta):", spDiasDieta);
+
+    // Desactivar inicialmente
+    spDietas->setEnabled(false);
+    spDiasDieta->setEnabled(false);
+
+    // Conexión para activar/desactivar dietas
+    connect(rbDietasSi, &QRadioButton::toggled, this, [this](bool checked){
+        spDietas->setEnabled(checked);
+        spDiasDieta->setEnabled(checked);
+    });
+
+    // --- Campos restantes ---
+    formLayout->addRow("Localidad:", leLocalidadObra);
     formLayout->addRow("KM desplazamiento:", sbKM);
-    formLayout->addRow("Dietas (empleados):", spDietas);
+    formLayout->addRow("Combustible:", sbLitros);
     formLayout->addRow("Horas estimadas:", sbHoras);
-    formLayout->addRow("Días de trabajo:", spDias);
+    formLayout->addRow("Días de trabajo:", spDias); // días generales
+
 
     // --- Tabla materiales ---
     twMaterials = new QTableWidget(0,4);
@@ -90,6 +122,7 @@ void MainWindow::setupUi() {
     btnSave = new QPushButton("Guardar presupuesto");
     btnPDF = new QPushButton("Guardar en PDF");
     btnPrint = new QPushButton("Imprimir presupuesto");
+    btnStart = new QPushButton("Mantenimientos");
     QLabel *lbl1 = new QLabel("Total sin IVA:"); lblTotalNoIVA = new QLabel("0.00 €");
     QLabel *lbl2 = new QLabel("Total con IVA (21%):"); lblTotalConIVA = new QLabel("0.00 €");
     QPushButton *btnEditPrices = new QPushButton("Editar precios base");
@@ -99,6 +132,7 @@ void MainWindow::setupUi() {
     connect(btnEditPrices, &QPushButton::clicked, this, &MainWindow::onEditPrices);
     connect(btnPDF, &QPushButton::clicked, this, &MainWindow::onExportPDF);
     connect(btnPrint, &QPushButton::clicked, this, &MainWindow::onPrintBudget);
+    connect(btnStart, &QPushButton::clicked, this, &MainWindow::onBackToStart);
 
     // ---------------------- Left Column ----------------------
     auto *leftV = new QVBoxLayout;
@@ -108,6 +142,7 @@ void MainWindow::setupUi() {
     leftV->addWidget(btnPDF);
     leftV->addWidget(btnPrint);
     leftV->addWidget(btnEditPrices);
+    leftV->addWidget(btnStart);
     leftV->addStretch();
     leftV->addWidget(lbl1); leftV->addWidget(lblTotalNoIVA);
     leftV->addWidget(lbl2); leftV->addWidget(lblTotalConIVA);
@@ -173,11 +208,13 @@ void MainWindow::onCalculate() {
     if (!leClientName->text().isEmpty()) count++;
     if (sbMetros->value() > 0) count++;
     if (!cbTipoLocal->currentText().isEmpty()) count++;
-    QLineEdit *leLocalidad = findChild<QLineEdit*>("leLocalidad");
-    if (leLocalidad && !leLocalidad->text().isEmpty()) count++;
+    if (!leLocalidadObra->text().isEmpty()) count++;
     if (!cbTipoCubierta->currentText().isEmpty()) count++;
+    if (!cbZona->currentText().isEmpty()) count++;
     if (sbKM->value() > 0) count++;
+    if (sbLitros->value() > 0) count++;
     if (spDietas->value() > 0) count++;
+    if (spDiasDieta->value() > 0) count++;
     if (twMaterials->rowCount() > 0) count++;
     if (sbHoras->value() > 0) count++;
     if (spDias->value() > 0) count++;
@@ -218,23 +255,25 @@ void MainWindow::onSaveBudget() {
     int clientId = q.lastInsertId().toInt();
 
     // budget
-    QLineEdit *leLocalidad = findChild<QLineEdit*>("leLocalidad");
     double base = getSettingDouble("price_base", 10.0);
     double totalNoIva = lblTotalNoIVA->text().replace(" €","").toDouble();
     double totalConIva = lblTotalConIVA->text().replace(" €","").toDouble();
 
     QSqlQuery qb(d);
     qb.prepare(R"(
-        INSERT INTO budgets(client_id, metros, tipo_local, localidad, tipo_cubierta, km, dietas, horas, dias, base_price, total_no_iva, total_con_iva)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+        INSERT INTO budgets(client_id, tipo_local, metros, tipo_cubierta, zona, localidad, km, combustible, dietas, dietas_dias, horas, dias, base_price, total_no_iva, total_con_iva)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     )");
     qb.addBindValue(clientId);
-    qb.addBindValue(sbMetros->value());
     qb.addBindValue(cbTipoLocal->currentText());
-    qb.addBindValue(leLocalidad ? leLocalidad->text() : QString());
+    qb.addBindValue(sbMetros->value());
     qb.addBindValue(cbTipoCubierta->currentText());
+    qb.addBindValue(cbZona->currentText()); 
+    qb.addBindValue(leLocalidadObra ? leLocalidadObra->text() : QString());
     qb.addBindValue(sbKM->value());
+    qb.addBindValue(sbLitros->value());
     qb.addBindValue(spDietas->value());
+    qb.addBindValue(spDiasDieta->value());
     qb.addBindValue(sbHoras->value());
     qb.addBindValue(spDias->value());
     qb.addBindValue(base);
@@ -275,19 +314,23 @@ void MainWindow::onLoadSelectedBudget() {
     if (!it) return;
     int id = it->data(Qt::UserRole).toInt();
     QSqlQuery qb(Database::instance());
-    qb.prepare("SELECT client_id, metros, tipo_local, localidad, tipo_cubierta, km, dietas, horas, dias FROM budgets WHERE id = ?");
+    qb.prepare("SELECT client_id, metros, tipo_local, localidad, tipo_cubierta, km, combustible, dietas, horas, dias, zona, dietas_dias FROM budgets WHERE id = ?");
     qb.addBindValue(id);
     if (!qb.exec() || !qb.next()) return;
     int clientId = qb.value(0).toInt();
     sbMetros->setValue(qb.value(1).toDouble());
     cbTipoLocal->setCurrentText(qb.value(2).toString());
-    QLineEdit *leLocalidad = findChild<QLineEdit*>("leLocalidad");
-    if (leLocalidad) leLocalidad->setText(qb.value(3).toString());
+    // QLineEdit *leLocalidad = findChild<QLineEdit*>("leLocalidad");
+    // if (leLocalidad) leLocalidad->setText(qb.value(3).toString());
+    leLocalidadObra->setText(qb.value(3).toString());
     cbTipoCubierta->setCurrentText(qb.value(4).toString());
     sbKM->setValue(qb.value(5).toDouble());
     spDietas->setValue(qb.value(6).toInt());
     sbHoras->setValue(qb.value(7).toDouble());
     spDias->setValue(qb.value(8).toInt());
+    cbZona->setCurrentText(qb.value(9).toString());
+    sbLitros->setValue(qb.value(10).toDouble());
+    spDiasDieta->setValue(qb.value(11).toInt());
 
     // load client
     QSqlQuery qc(Database::instance());
@@ -337,146 +380,4 @@ void MainWindow::onEditPrices() {
     q.addBindValue("iva_pct"); q.addBindValue(QString::number(newIva)); q.exec();
 
     QMessageBox::information(this, "Ajustes", "Precios actualizados.");
-}
-
-// --- Generación de Contenido HTML ---
-
-QString MainWindow::generateBudgetHtml(int id) {
-    QString html = R"(
-        <style>
-            body { font-family: Arial, sans-serif; }
-            h1 { color: #004d99; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
-            .section { margin-top: 20px; padding: 10px; background-color: #f7f7f7; border: 1px solid #eee; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-            th { background-color: #e0e0e0; }
-            .total-row td { font-weight: bold; background-color: #cceeff; }
-        </style>
-        <h1>Presupuesto Australair ID: %1</h1>
-    )";
-    html = html.arg(id);
-
-    // --- Datos del Cliente ---
-    html += R"(<div class="section"><h2>Datos del Cliente</h2>)";
-    html += QString("<table><tr><td>**Cliente:** %1</td><td>**Contacto:** %2</td></tr>")
-                .arg(leClientName->text(), leContact->text());
-    html += QString("<tr><td>**Empresa:** %1</td><td>**Teléfono:** %2</td></tr>")
-                .arg(leCompany->text(), lePhone->text());
-    html += QString("<tr><td>**Dirección:** %1</td><td>**Email:** %2</td></tr></table></div>")
-                .arg(leAddress->text(), leEmail->text());
-
-    // --- Detalles del Proyecto ---
-    QLineEdit *leLocalidad = findChild<QLineEdit*>("leLocalidad");
-    html += R"(<div class="section"><h2>Detalles del Proyecto</h2>)";
-    html += "<table>";
-    html += QString("<tr><td>**Metros Cuadrados:** %1 m²</td><td>**Localidad:** %2</td></tr>")
-                .arg(sbMetros->text(), leLocalidad ? leLocalidad->text() : QString());
-    html += QString("<tr><td>**Tipo de Local:** %1</td><td>**Tipo de Cubierta:** %2</td></tr>")
-                .arg(cbTipoLocal->currentText(), cbTipoCubierta->currentText());
-    html += QString("<tr><td>**KM Desplazamiento:** %1 km</td><td>**Días de Trabajo:** %2</td></tr>")
-                .arg(sbKM->text(), QString::number(spDias->value()));
-    html += QString("<tr><td>**Horas Estimadas:** %1</td><td>**Dietas (empleados):** %2</td></tr>")
-                .arg(sbHoras->text(), QString::number(spDietas->value()));
-    html += "</table></div>";
-
-    // --- Materiales ---
-    html += R"(<div class="section"><h2>Materiales</h2>)";
-    html += "<table><tr><th>Nombre</th><th>Cantidad</th><th>Precio Unit.</th><th>Total</th></tr>";
-    for (int r = 0; r < twMaterials->rowCount(); ++r) {
-        QString name = twMaterials->item(r, 0)->text();
-        QString qty  = twMaterials->item(r, 1)->text();
-        QString up   = twMaterials->item(r, 2)->text();
-        QString totalLine = twMaterials->item(r, 3)->text();
-        html += QString("<tr><td>%1</td><td>%2</td><td>%3 €</td><td>%4 €</td></tr>")
-                    .arg(name, qty, up, totalLine);
-    }
-    html += "</table></div>";
-
-    // --- Totales ---
-    html += R"(<div class="section"><h2>Resumen Económico</h2>)";
-    html += "<table>";
-
-    double totalNoIva = lblTotalNoIVA->text().replace(" €","").toDouble();
-    double totalConIva = lblTotalConIVA->text().replace(" €","").toDouble();
-    double base = getSettingDouble("price_base", 0);
-    double incrementPerField = getSettingDouble("increment_per_field", 0);
-    int filledFields = 10; // Ajusta según la lógica de cálculo real
-    double totalBaseAndIncrements = base + incrementPerField * filledFields;
-    double totalMaterials = totalNoIva - totalBaseAndIncrements;
-    double ivaPct = getSettingDouble("iva_pct", 21);
-
-    html += QString("<tr><td style='width:70%%'>**Total Base + Incrementos**</td><td style='text-align:right'>%1 €</td></tr>")
-                .arg(QString::number(totalBaseAndIncrements, 'f', 2));
-    html += QString("<tr><td>**Total Materiales**</td><td style='text-align:right'>%1 €</td></tr>")
-                .arg(QString::number(totalMaterials, 'f', 2));
-    html += QString("<tr class='total-row'><td>**SUBTOTAL (Sin IVA)**</td><td style='text-align:right'>%1 €</td></tr>")
-                .arg(QString::number(totalNoIva, 'f', 2));
-    html += QString("<tr><td>**IVA (%1%%)**</td><td style='text-align:right'>%2 €</td></tr>")
-                .arg(QString::number(ivaPct),
-                     QString::number(totalConIva - totalNoIva, 'f', 2));
-    html += QString("<tr class='total-row'><td>**TOTAL CON IVA**</td><td style='text-align:right'>%1 €</td></tr>")
-                .arg(QString::number(totalConIva, 'f', 2));
-
-    html += "</table></div>";
-
-    return html;
-}
-
-// --- Slot para Guardar en PDF ---
-
-void MainWindow::onExportPDF() {
-    // 1. Asegurarse de que el cálculo esté hecho
-    onCalculate();
-
-    // 2. Pedir al usuario la ruta del archivo
-    QString fileName = QFileDialog::getSaveFileName(this, "Guardar presupuesto como PDF",
-                                                    "presupuesto_" + QDateTime::currentDateTime().toString("yyyyMMdd") + ".pdf",
-                                                    "Archivos PDF (*.pdf)");
-    if (fileName.isEmpty()) return;
-
-    // 3. Generar el contenido HTML
-    int currentId = lwBudgets->currentItem() ? lwBudgets->currentItem()->data(Qt::UserRole).toInt() : 0;
-    QString htmlContent = generateBudgetHtml(currentId);
-
-    // 4. Crear el documento e imprimir
-    QTextDocument document;
-    document.setHtml(htmlContent);
-
-    QPrinter printer(QPrinter::PrinterResolution);
-    printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setOutputFileName(fileName);
-    document.print(&printer);
-
-    QMessageBox::information(this, "Exportar PDF", "Presupuesto guardado exitosamente como PDF.");
-}
-
-
-// --- Slot para Imprimir Presupuesto ---
-
-void MainWindow::onPrintBudget() {
-    // 1. Asegurarse de que el cálculo esté hecho
-    onCalculate();
-
-    // 2. Generar el contenido HTML
-    int currentId = lwBudgets->currentItem() ? lwBudgets->currentItem()->data(Qt::UserRole).toInt() : 0;
-    QString htmlContent = generateBudgetHtml(currentId);
-    
-    // 3. Crear el documento
-    QTextDocument document;
-    document.setHtml(htmlContent);
-
-    // 4. Configurar impresora y mostrar diálogo
-    QPrinter printer(QPrinter::PrinterResolution);
-    QPrintDialog printDialog(&printer, this);
-    if (printDialog.exec() == QDialog::Accepted) {
-        document.print(&printer);
-    }
-}
-
-void MainWindow::onPrint() {
-    // TODO: implementar impresión directa si es necesario
-}
-
-void MainWindow::onPrintPreview() {
-    // TODO: implementar vista previa de impresión si es necesario
 }

@@ -7,7 +7,9 @@ SOURCES = $(SRC_DIR)/main.cpp \
           $(SRC_DIR)/MainWindow.cpp \
           $(SRC_DIR)/Database.cpp \
 		  $(SRC_DIR)/AustralairBudget.cpp \
-          $(SRC_DIR)/Buttons.cpp
+          $(SRC_DIR)/Buttons.cpp \
+          $(SRC_DIR)/Printer.cpp \
+          $(SRC_DIR)/ExportPdf.cpp
 
 HEADERS = $(LIB_DIR)/MainWindow.hpp \
           $(LIB_DIR)/Database.hpp \
@@ -85,7 +87,7 @@ $(LIB_DIR)/AustralairBudget_moc.cpp: $(LIB_DIR)/AustralairBudget.hpp
 
 # --- Utilidades ---
 
-clean:
+fclean:
 	@echo "🧹 Limpiando archivos intermedios..."
 	rm -f $(OBJECTS_SOURCES) $(OBJECTS_MOC) $(OBJECTS_RCC) $(MOC_SOURCES) $(RCC_SOURCES) $(TARGET)
 	@echo "Limpieza completa."
@@ -93,6 +95,6 @@ clean:
 run: $(TARGET)
 	@echo "🚀 Ejecutando aplicación..."
 	./$(TARGET)
-re: clean all run
+re: fclean all run
 
-.PHONY: all clean run re
+.PHONY: all fclean run re

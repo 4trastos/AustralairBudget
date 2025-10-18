@@ -13,6 +13,8 @@ set(SRC
     src/Database.cpp
     src/AustralairBudget.cpp
     src/Buttons.cpp
+    src/Printer.cpp
+    src/ExportPdf.cpp
     src/resources.qrc
 )
 
