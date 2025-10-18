@@ -20,15 +20,6 @@ void MainWindow::setupUi() {
     auto *formLayout = new QFormLayout;
 
     // --- Campos cliente ---
-    /* leClientName = new QLineEdit; leCompany = new QLineEdit; leContact = new QLineEdit;
-    leAddress = new QLineEdit; lePhone = new QLineEdit; leEmail = new QLineEdit;
-
-    formLayout->addRow("Cliente (nombre):", leClientName);
-    formLayout->addRow("Empresa:", leCompany);
-    formLayout->addRow("Contacto:", leContact);
-    formLayout->addRow("Dirección:", leAddress);
-    formLayout->addRow("Teléfono:", lePhone);
-    formLayout->addRow("Email:", leEmail); */
     leClientName = new QLineEdit; leCompany = new QLineEdit; leContact = new QLineEdit;
     leAddress = new QLineEdit; lePhone = new QLineEdit; leEmail = new QLineEdit;
 
