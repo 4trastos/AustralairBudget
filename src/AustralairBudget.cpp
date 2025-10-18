@@ -58,6 +58,7 @@ AustralairBudget::AustralairBudget(QWidget *parent) : QWidget(parent) {
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addStretch();
     mainLayout->addWidget(lblLogo);
+    mainLayout->addSpacing(30);
     mainLayout->addWidget(lblTitle);
     mainLayout->addSpacing(40);
     mainLayout->addLayout(btnLayout);

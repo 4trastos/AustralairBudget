@@ -50,15 +50,15 @@ void MainWindow::setupUi() {
 
     // ---------------------- Campos proyecto ----------------------
     sbMetros = new QDoubleSpinBox; sbMetros->setRange(0, 1e6); sbMetros->setSuffix(" m²");
-    cbTipoLocal = new QComboBox; cbTipoLocal->addItems({"Nave industrial","Local comercial","Vivienda","Complejo Deportivo"});
-    cbTipoCubierta = new QComboBox; cbTipoCubierta->addItems({"Chapa","Teja","Cubierta plana","Panel sandwich", "Uralita"});
+    cbTipoLocal = new QComboBox; cbTipoLocal->addItems({" ··· ","Nave industrial","Local comercial","Vivienda","Complejo Deportivo"});
+    cbTipoCubierta = new QComboBox; cbTipoCubierta->addItems({" ··· ","Chapa","Teja","Cubierta plana","Panel sandwich", "Uralita"});
     sbKM = new QDoubleSpinBox; sbKM->setRange(0,10000); sbKM->setSuffix(" km");
     sbLitros = new QDoubleSpinBox; sbLitros->setRange(0,10000); sbLitros->setSuffix(" lts");
     sbHoras = new QDoubleSpinBox; sbHoras->setRange(0,1e5);
     spDietas = new QSpinBox; spDietas->setRange(0,1000);
     spDiasDieta = new QSpinBox; spDiasDieta->setRange(0,365); // días asociados a dietas
     spDias = new QSpinBox; spDias->setRange(0,365); // días de trabajo generales
-    cbZona = new QComboBox; cbZona->addItems({"Zona Centro","Otras Zonas"});
+    cbZona = new QComboBox; cbZona->addItems({" ··· ","Zona Centro","Otras Zonas"});
     leLocalidadObra = new QLineEdit;
 
     // --- Campos proyecto básicos ---
