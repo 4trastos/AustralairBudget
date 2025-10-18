@@ -1,5 +1,6 @@
 #include "MainWindow.hpp"
 #include "Database.hpp"
+#include "AustralairBudget.hpp"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     if (!Database::init()) {
@@ -8,16 +9,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     }
     setupUi();
     loadSettings();
+    showMaximized();
 }
 
 void MainWindow::setupUi() {
     QWidget *w = new QWidget;
     auto *mainLayout = new QHBoxLayout;
 
-    // Left: form
+    // ---------------------- Formulario ----------------------
     auto *formLayout = new QFormLayout;
 
-    leClientName = new QLineEdit; leCompany = new QLineEdit; leContact = new QLineEdit;
+    // --- Campos cliente ---
+    /* leClientName = new QLineEdit; leCompany = new QLineEdit; leContact = new QLineEdit;
     leAddress = new QLineEdit; lePhone = new QLineEdit; leEmail = new QLineEdit;
 
     formLayout->addRow("Cliente (nombre):", leClientName);
@@ -25,8 +28,36 @@ void MainWindow::setupUi() {
     formLayout->addRow("Contacto:", leContact);
     formLayout->addRow("Dirección:", leAddress);
     formLayout->addRow("Teléfono:", lePhone);
-    formLayout->addRow("Email:", leEmail);
+    formLayout->addRow("Email:", leEmail); */
+    leClientName = new QLineEdit; leCompany = new QLineEdit; leContact = new QLineEdit;
+    leAddress = new QLineEdit; lePhone = new QLineEdit; leEmail = new QLineEdit;
 
+    auto *customerLayout = new QGridLayout;
+    customerLayout->addWidget(new QLabel("Cliente (nombre):"), 0, 0);
+    customerLayout->addWidget(leClientName, 0, 1);
+    customerLayout->addWidget(new QLabel("Empresa:"), 0, 2);
+    customerLayout->addWidget(leCompany, 0, 3);
+
+    customerLayout->addWidget(new QLabel("Contacto:"), 1, 0);
+    customerLayout->addWidget(leContact, 1, 1);
+    customerLayout->addWidget(new QLabel("Teléfono:"), 1, 2);
+    customerLayout->addWidget(lePhone, 1, 3);
+
+    customerLayout->addWidget(new QLabel("Dirección:"), 2, 0);
+    customerLayout->addWidget(leAddress, 2, 1);
+    customerLayout->addWidget(new QLabel("Email:"), 2, 2);
+    customerLayout->addWidget(leEmail, 2, 3);
+
+    formLayout->addRow(customerLayout);
+
+    // ---------------------- Línea azul separadora ----------------------
+    QFrame *blueLine = new QFrame;
+    blueLine->setFrameShape(QFrame::HLine);
+    blueLine->setFrameShadow(QFrame::Sunken);
+    blueLine->setStyleSheet("color: #3498DB; background-color: #3498DB; max-height: 3px;");
+    formLayout->addRow(blueLine);
+
+    // ---------------------- Campos proyecto (pares con columnas iguales) ----------------------
     sbMetros = new QDoubleSpinBox; sbMetros->setRange(0, 1e6); sbMetros->setSuffix(" m²");
     cbTipoLocal = new QComboBox; cbTipoLocal->addItems({"Nave industrial","Local comercial","Vivienda","Pista de pádel indoor"});
     cbTipoCubierta = new QComboBox; cbTipoCubierta->addItems({"Chapa","Teja","Hormigón","Otros"});

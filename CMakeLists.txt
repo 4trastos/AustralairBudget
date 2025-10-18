@@ -6,15 +6,31 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 COMPONENTS Widgets Sql REQUIRED)
 
-add_executable(australair
-    src/AustralairBudget.hpp
-    lib/MainWindow.h
+# Fuentes y headers
+set(SRC
+    src/main.cpp
     src/MainWindow.cpp
-    lib/Database.h
     src/Database.cpp
+    src/AustralairBudget.cpp
     src/resources.qrc
 )
 
-qt6_add_resources(AU_RES src/resources.qrc)
+set(HDR
+    incl/MainWindow.hpp
+    incl/Database.hpp
+    incl/AustralairBudget.hpp
+)
 
+# Ejecutable
+add_executable(australair ${SRC} ${HDR})
+
+# MOC automatico
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+# Recursos
+qt6_add_resources(RESOURCES_RCC src/resources.qrc)
+target_sources(australair PRIVATE ${RESOURCES_RCC})
+
+# Librerías
 target_link_libraries(australair PRIVATE Qt6::Widgets Qt6::Sql)
