@@ -117,37 +117,6 @@ void MainWindow::setupUi() {
     connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
         this, &MainWindow::updateDistanceAndFuel);
 
-
-    /* // --- Campos proyecto básicos ---
-    formLayout->addRow("Tipo de local:", cbTipoLocal);
-    formLayout->addRow("Metros cuadrados:", sbMetros);
-    formLayout->addRow("Tipo de cubierta:", cbTipoCubierta);
-    formLayout->addRow("Zona:", cbZona);
-
-    // --- Bloque Dietas (Sí/No) ---
-    QHBoxLayout *dietasLayout = new QHBoxLayout;
-    QRadioButton *rbDietasSi = new QRadioButton("Sí");
-    QRadioButton *rbDietasNo = new QRadioButton("No");
-    rbDietasNo->setChecked(true);
-    dietasLayout->addWidget(rbDietasSi);
-    dietasLayout->addWidget(rbDietasNo);
-    QWidget *dietasWidget = new QWidget;
-    dietasWidget->setLayout(dietasLayout);
-
-    formLayout->addRow("Dietas:", dietasWidget);
-    formLayout->addRow("Empleados (dieta):", spDietas);
-    formLayout->addRow("Días (dieta):", spDiasDieta);
-
-    // --- Desactivar inicialmente ---
-    spDietas->setEnabled(false);
-    spDiasDieta->setEnabled(false);
-
-    // --- Conexión para activar/desactivar dietas y Kilometros / Combustible ---
-    connect(rbDietasSi, &QRadioButton::toggled, this, [this](bool checked){
-        spDietas->setEnabled(checked);
-        spDiasDieta->setEnabled(checked);
-    }); */
-
     // --- Conexión para Kilometros / Combustible ---
     connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
         this, &MainWindow::updateDistanceAndFuel);
@@ -177,6 +146,75 @@ void MainWindow::setupUi() {
     matLayout->addLayout(matBtns);
     matWidget->setLayout(matLayout);
     formLayout->addRow("Materiales:", matWidget);
+
+/* 
+    // --- Tabla materiales ---
+    twMaterials = new QTableWidget(0, 4);
+    twMaterials->setHorizontalHeaderLabels({"Nombre", "Cantidad", "Precio unit.", "Total"});
+    twMaterials->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    // --- Cargar materiales desde archivo ---
+    QMap<QString, double> materialsMap = loadMaterialsFromFile("materials.txt");
+
+    // --- Combobox para seleccionar materiales ---
+    cbMaterials = new QComboBox;
+    for (auto it = materialsMap.begin(); it != materialsMap.end(); ++it)
+        cbMaterials->addItem(it.key());
+    cbMaterials->addItem("Añadir material"); // opción para introducir manualmente
+
+    // --- Botones ---
+    btnAddMat = new QPushButton("Añadir material");
+    btnRemoveMat = new QPushButton("Eliminar material");
+
+    // --- Conexiones ---
+    connect(btnAddMat, &QPushButton::clicked, this, [=]() {
+        QString materialName = cbMaterials->currentText();
+        double unitPrice = 0.0;
+
+        if (materialName == "Añadir material") {
+            bool ok;
+            materialName = QInputDialog::getText(this, "Nuevo material", "Nombre del material:", QLineEdit::Normal, "", &ok);
+            if (!ok || materialName.isEmpty()) return;
+
+            unitPrice = QInputDialog::getDouble(this, "Nuevo material", "Precio unitario:", 0.0, 0, 1e6, 2, &ok);
+            if (!ok) return;
+
+        } else {
+            unitPrice = materialsMap.value(materialName, 0.0);
+        }
+
+        int row = twMaterials->rowCount();
+        twMaterials->insertRow(row);
+
+        twMaterials->setItem(row, 0, new QTableWidgetItem(materialName));
+        twMaterials->setItem(row, 1, new QTableWidgetItem("1")); // cantidad inicial 1
+        twMaterials->setItem(row, 2, new QTableWidgetItem(QString::number(unitPrice, 'f', 2)));
+        twMaterials->setItem(row, 3, new QTableWidgetItem(QString::number(unitPrice, 'f', 2)));
+    });
+
+    connect(btnRemoveMat, &QPushButton::clicked, this, [=]() {
+        auto selectedRows = twMaterials->selectionModel()->selectedRows();
+        for (auto it = selectedRows.rbegin(); it != selectedRows.rend(); ++it) {
+            twMaterials->removeRow(it->row());
+        }
+    });
+
+    // --- Layout ---
+    QWidget *matWidget = new QWidget;
+    auto *matLayout = new QVBoxLayout;
+    matLayout->addWidget(twMaterials);
+
+    auto *matBtns = new QHBoxLayout;
+    matBtns->addWidget(cbMaterials);
+    matBtns->addWidget(btnAddMat);
+    matBtns->addWidget(btnRemoveMat);
+
+    matLayout->addLayout(matBtns);
+    matWidget->setLayout(matLayout);
+
+    formLayout->addRow("Materiales:", matWidget);
+
+ */
 
     // ---------------------- Botones ----------------------
     btnCalc = new QPushButton("Calcular");
