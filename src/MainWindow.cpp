@@ -145,33 +145,6 @@ void MainWindow::setupUi() {
         it->setData(Qt::UserRole, id);
         lwBudgets->addItem(it);
     }
-
-    /* // Right: saved budgets list
-    auto *rightV = new QVBoxLayout;
-    lwBudgets = new QListWidget;
-    QPushButton *btnLoad = new QPushButton("Abrir seleccionado");
-    connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadSelectedBudget);
-    rightV->addWidget(new QLabel("Presupuestos guardados"));
-    rightV->addWidget(lwBudgets);
-    rightV->addWidget(btnLoad);
-
-    mainLayout->addLayout(leftV, 3);
-    mainLayout->addLayout(rightV, 1);
-
-    w->setLayout(mainLayout);
-    setCentralWidget(w);
-    setWindowTitle("Australair - Gestor de presupuestos");
-
-    // Load saved budgets into list
-    QSqlQuery q(Database::instance());
-    q.exec("SELECT id, created_at FROM budgets ORDER BY created_at DESC");
-    while (q.next()) {
-        int id = q.value(0).toInt();
-        QString ts = q.value(1).toString();
-        auto *it = new QListWidgetItem(QString::number(id) + " - " + ts);
-        it->setData(Qt::UserRole, id);
-        lwBudgets->addItem(it);
-    } */
 }
 
 double MainWindow::getSettingDouble(const QString &key, double def) {
@@ -189,22 +162,6 @@ double MainWindow::getSettingDouble(const QString &key, double def) {
 void MainWindow::loadSettings() {
     // nothing to do now, will read when calculating
 }
-
-/* void MainWindow::onNewMaterial() {
-    int r = twMaterials->rowCount();
-    twMaterials->insertRow(r);
-    twMaterials->setItem(r,0, new QTableWidgetItem("Nombre"));
-    twMaterials->setItem(r,1, new QTableWidgetItem("1"));
-    twMaterials->setItem(r,2, new QTableWidgetItem("10.00"));
-    twMaterials->setItem(r,3, new QTableWidgetItem("10.00"));
-}
-
-void MainWindow::onRemoveMaterial() {
-    auto items = twMaterials->selectedItems();
-    if (items.isEmpty()) return;
-    int row = items.first()->row();
-    twMaterials->removeRow(row);
-} */
 
 void MainWindow::onCalculate() {
     double base = getSettingDouble("price_base", 10.0);
