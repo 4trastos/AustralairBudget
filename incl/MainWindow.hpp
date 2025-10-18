@@ -39,10 +39,10 @@ private slots:
     void onPrintPreview();
     void onBackToStart();
     void onDeleteSelectedBudget();
-    // void onDeleteFields();
-    // void refreshBudgetsList();
+    void onDeleteFields();
+    void refreshBudgetsList();  // FALTA POR IMPLEMENTAR
+    void onToggleStatus();
     // void recalcClosedBudget();
-    // void onToggleStatus();
 
 private:
     void setupUi();

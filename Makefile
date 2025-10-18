@@ -9,7 +9,8 @@ SOURCES = $(SRC_DIR)/main.cpp \
 		  $(SRC_DIR)/AustralairBudget.cpp \
           $(SRC_DIR)/Buttons.cpp \
           $(SRC_DIR)/Printer.cpp \
-          $(SRC_DIR)/ExportPdf.cpp
+          $(SRC_DIR)/ExportPdf.cpp \
+          $(SRC_DIR)/StatusWork.cpp
 
 HEADERS = $(LIB_DIR)/MainWindow.hpp \
           $(LIB_DIR)/Database.hpp \

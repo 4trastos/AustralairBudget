@@ -51,6 +51,7 @@ void Database::ensureSchema() {
       base_price REAL,
       total_no_iva REAL,
       total_con_iva REAL,
+      status TEXT DEFAULT 'abierta',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(client_id) REFERENCES clients(id)
     ))");

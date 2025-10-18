@@ -187,16 +187,32 @@ void MainWindow::setupUi() {
     lwBudgets = new QListWidget;
     QPushButton *btnLoad = new QPushButton("Abrir seleccionado");
     connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadSelectedBudget);
-    QPushButton *btnDelete = new QPushButton("Eliminar Seleccionado");
+    QPushButton *btnDelete = new QPushButton("Eliminar seleccionado");
     connect(btnDelete, &QPushButton::clicked, this, &MainWindow::onDeleteSelectedBudget);
 
-    auto *btnsLayout = new QHBoxLayout;
-    btnsLayout->addWidget(btnLoad);
-    btnsLayout->addWidget(btnDelete);
+    // --- Nuevos botones ---
+    QPushButton *btnClearFields = new QPushButton("Borrar campos");
+    connect(btnClearFields, &QPushButton::clicked, this, &MainWindow::onDeleteFields);
+    /* QPushButton *btnCloseProject = new QPushButton("Cerrar obra");
+    connect(btnCloseProject, &QPushButton::clicked, this, &MainWindow::onToggleStatus); */
+    QPushButton *btnCloseProject = new QPushButton("Cerrar obra");
+    btnCloseProject->setObjectName("btnCloseProject");
+    connect(btnCloseProject, &QPushButton::clicked, this, &MainWindow::onToggleStatus);
+
+    // Layouts de botones
+    auto *btnsLayout1 = new QHBoxLayout;
+    btnsLayout1->addWidget(btnLoad);
+    btnsLayout1->addWidget(btnDelete);
+
+    auto *btnsLayout2 = new QHBoxLayout;
+    btnsLayout2->addWidget(btnClearFields);
+    btnsLayout2->addWidget(btnCloseProject);
 
     rightV->addWidget(new QLabel("Presupuestos guardados"));
     rightV->addWidget(lwBudgets);
-    rightV->addLayout(btnsLayout);
+    rightV->addLayout(btnsLayout1);
+    rightV->addLayout(btnsLayout2);
+
 
     // ---------------------- Main Layout ----------------------
     mainLayout->addLayout(leftV, 3);
@@ -207,11 +223,21 @@ void MainWindow::setupUi() {
 
     // ---------------------- Cargar presupuestos guardados ----------------------
     QSqlQuery q(Database::instance());
-    q.exec("SELECT id, created_at FROM budgets ORDER BY created_at DESC");
+    // q.exec("SELECT id, created_at FROM budgets ORDER BY created_at DESC");
+    // while (q.next()) {
+    //     int id = q.value(0).toInt();
+    //     QString ts = q.value(1).toString();
+    //     auto *it = new QListWidgetItem(QString::number(id) + " - " + ts);
+    //     it->setData(Qt::UserRole, id);
+    //     lwBudgets->addItem(it);
+    // }
+    q.exec("SELECT id, created_at, status FROM budgets ORDER BY created_at DESC");
     while (q.next()) {
         int id = q.value(0).toInt();
         QString ts = q.value(1).toString();
-        auto *it = new QListWidgetItem(QString::number(id) + " - " + ts);
+        QString st = q.value(2).toString();
+        QString label = QString("%1 - %2  (%3)").arg(id).arg(ts).arg(st.toUpper());
+        auto *it = new QListWidgetItem(label);
         it->setData(Qt::UserRole, id);
         lwBudgets->addItem(it);
     }
@@ -355,8 +381,6 @@ void MainWindow::onLoadSelectedBudget() {
     int clientId = qb.value(0).toInt();
     sbMetros->setValue(qb.value(1).toDouble());
     cbTipoLocal->setCurrentText(qb.value(2).toString());
-    // QLineEdit *leLocalidad = findChild<QLineEdit*>("leLocalidad");
-    // if (leLocalidad) leLocalidad->setText(qb.value(3).toString());
     leLocalidadObra->setText(qb.value(3).toString());
     cbTipoCubierta->setCurrentText(qb.value(4).toString());
     sbKM->setValue(qb.value(5).toDouble());

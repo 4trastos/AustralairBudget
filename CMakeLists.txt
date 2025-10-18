@@ -15,6 +15,7 @@ set(SRC
     src/Buttons.cpp
     src/Printer.cpp
     src/ExportPdf.cpp
+    src/StatusWork.cpp
     src/resources.qrc
 )
 

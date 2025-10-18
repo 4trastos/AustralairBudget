@@ -50,3 +50,47 @@ void MainWindow::onRemoveMaterial() {
     int row = items.first()->row();
     twMaterials->removeRow(row);
 }
+
+void MainWindow::onDeleteFields() {
+    // --- Campos cliente ---
+    leClientName->clear();
+    leCompany->clear();
+    leContact->clear();
+    leAddress->clear();
+    lePhone->clear();
+    leEmail->clear();
+
+    // --- Campos proyecto ---
+    sbMetros->setValue(0);
+    sbKM->setValue(0);
+    sbLitros->setValue(0);
+    sbHoras->setValue(0);
+    spDietas->setValue(0);
+    spDiasDieta->setValue(0);
+    spDias->setValue(0);
+    leLocalidadObra->clear();
+
+    // --- ComboBoxes ---
+    cbTipoLocal->setCurrentIndex(0);
+    cbTipoCubierta->setCurrentIndex(0);
+    cbZona->setCurrentIndex(0);
+
+    // --- RadioButtons dietas ---
+    //if (rbDietasNo) rbDietasNo->setChecked(true);  // resetea a "No"
+
+    // --- Tabla materiales ---
+    if (twMaterials) {
+        twMaterials->clearContents();
+        twMaterials->setRowCount(0);
+    }
+
+    // --- Labels de totales ---
+    if (lblTotalNoIVA) lblTotalNoIVA->setText("0.00 €");
+    if (lblTotalConIVA) lblTotalConIVA->setText("0.00 €");
+
+    // --- Estado interno ---
+    currentBudgetId = 0;
+    currentStatus = "Abierta";
+
+    QMessageBox::information(this, "Campos borrados", "Todos los campos se han limpiado correctamente.");
+}
