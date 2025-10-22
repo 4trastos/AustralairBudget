@@ -603,22 +603,25 @@ void MainWindow::onSaveBudget()
 
     QSqlQuery qb(d);
     qb.prepare(R"(
-        INSERT INTO budgets(client_id, tipo_local, metros, tipo_cubierta, elevación, zona, localidad, km, combustible, dietas, dietas_dias, horas, dias, base_price, total_no_iva, total_con_iva)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        INSERT INTO budgets(client_id, tipo_local, metros, tipo_cubierta, elevación, portes, dias, zona, dietas, dietas_dias, localidad, km, combustible, operarios, dias, horas, base_price, total_no_iva, total_con_iva)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     )");
     qb.addBindValue(clientId);
     qb.addBindValue(cbTipoLocal->currentText());
     qb.addBindValue(sbMetros->value());
     qb.addBindValue(cbTipoCubierta->currentText());
     qb.addBindValue(cbElevador->currentText());
+    qb.addBindValue(sbElevPortes->value());
+    qb.addBindValue(spElevDia->value());
     qb.addBindValue(cbZona->currentText());
+    qb.addBindValue(spDietas->value());
+    qb.addBindValue(spDiasDieta->value());
     qb.addBindValue(leLocalidadObra ? leLocalidadObra->text() : QString());
     qb.addBindValue(sbKM->value());
     qb.addBindValue(sbLitros->value());
-    qb.addBindValue(spDietas->value());
-    qb.addBindValue(spDiasDieta->value());
-    qb.addBindValue(sbHoras->value());
+    qb.addBindValue(spOperarios->value());
     qb.addBindValue(spDias->value());
+    qb.addBindValue(sbHoras->value());
     qb.addBindValue(base);
     qb.addBindValue(totalNoIva);
     qb.addBindValue(totalConIva);
