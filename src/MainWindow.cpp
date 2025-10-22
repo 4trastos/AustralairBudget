@@ -329,7 +329,7 @@ void MainWindow::setupUi()
     setWindowTitle("Australair - Gestor de presupuestos");
 
     // ---------------------- Cargar presupuestos guardados ----------------------
-    QSqlQuery q(Database::instance());
+    /* QSqlQuery q(Database::instance());
     q.exec("SELECT id, created_at, status FROM budgets ORDER BY created_at DESC");
     while (q.next()) {
         int id = q.value(0).toInt();
@@ -339,7 +339,30 @@ void MainWindow::setupUi()
         auto *it = new QListWidgetItem(label);
         it->setData(Qt::UserRole, id);
         lwBudgets->addItem(it);
+    } */
+    QSqlQuery q(Database::instance());
+    q.exec(R"(
+        SELECT b.id, c.name, b.created_at, b.status
+        FROM budgets b
+        LEFT JOIN clients c ON b.client_id = c.id
+        ORDER BY b.created_at DESC
+    )");
+    while (q.next()) {
+        int id = q.value(0).toInt();
+        QString clientName = q.value(1).toString();
+        QString ts = q.value(2).toString();
+        QString st = q.value(3).toString();
+
+        QString label = QString("%1 - %2  |  %3  (%4)")
+                            .arg(id)
+                            .arg(clientName.isEmpty() ? "Sin cliente" : clientName)
+                            .arg(ts)
+                            .arg(st.toUpper());
+        auto *it = new QListWidgetItem(label);
+        it->setData(Qt::UserRole, id);
+        lwBudgets->addItem(it);
     }
+
 }
 
 double MainWindow::getSettingDouble(const QString &key, double def)
@@ -480,7 +503,20 @@ void MainWindow::onSaveBudget()
     }
 
     // add to list widget
-    auto *it = new QListWidgetItem(QString::number(budgetId) + " - " + QDateTime::currentDateTime().toString());
+   /*  auto *it = new QListWidgetItem(QString::number(budgetId) + " - " + QDateTime::currentDateTime().toString());
+    it->setData(Qt::UserRole, budgetId);
+    lwBudgets->insertItem(0, it); */
+    QString clientName = leClientName->text();
+    QString fecha = QDateTime::currentDateTime().toString("ddd MMM dd HH:mm:ss yyyy");
+    QString estado = "ABIERTA";
+
+    QString label = QString("%1 - %2  |  %3  (%4)")
+                        .arg(budgetId)
+                        .arg(clientName.isEmpty() ? "Sin cliente" : clientName)
+                        .arg(fecha)
+                        .arg(estado);
+
+    auto *it = new QListWidgetItem(label);
     it->setData(Qt::UserRole, budgetId);
     lwBudgets->insertItem(0, it);
 
