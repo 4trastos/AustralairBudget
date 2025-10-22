@@ -2,17 +2,21 @@
 #include "Database.hpp"
 #include "AustralairBudget.hpp"
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-    if (!Database::init()) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+{
+    if (!Database::init())
+    {
         QMessageBox::critical(nullptr, "DB", "No se pudo abrir la base de datos");
         exit(1);
     }
     setupUi();
     loadSettings();
+    setNextBudgetNumberAndDate();
     showMaximized();
 }
 
-void MainWindow::setupUi() {
+void MainWindow::setupUi()
+{
     QWidget *w = new QWidget;
     auto *mainLayout = new QHBoxLayout;
 
@@ -20,24 +24,33 @@ void MainWindow::setupUi() {
     auto *formLayout = new QFormLayout;
 
     // --- Campos cliente ---
-    leClientName = new QLineEdit; leCompany = new QLineEdit; leContact = new QLineEdit;
-    leAddress = new QLineEdit; lePhone = new QLineEdit; leEmail = new QLineEdit;
+    leClientName = new QLineEdit; leCompany = new QLineEdit;
+    leContact = new QLineEdit; leAddress = new QLineEdit;
+    lePhone = new QLineEdit; leEmail = new QLineEdit;
+    leCIF = new QLineEdit; leNumPresu = new QLineEdit;
+    leFecha = new QLineEdit;
 
     auto *customerLayout = new QGridLayout;
-    customerLayout->addWidget(new QLabel("Cliente (nombre):"), 0, 0);
-    customerLayout->addWidget(leClientName, 0, 1);
-    customerLayout->addWidget(new QLabel("Empresa:"), 0, 2);
-    customerLayout->addWidget(leCompany, 0, 3);
+    customerLayout->addWidget(new QLabel("Nº Presp.:"), 0, 0);
+    customerLayout->addWidget(leNumPresu, 0, 1);
+    customerLayout->addWidget(new QLabel("Cliente (Empresa):"), 0, 2);
+    customerLayout->addWidget(leClientName, 0, 3);
+    customerLayout->addWidget(new QLabel("Obra:"), 0, 4);
+    customerLayout->addWidget(leCompany, 0, 5);
 
-    customerLayout->addWidget(new QLabel("Contacto:"), 1, 0);
-    customerLayout->addWidget(leContact, 1, 1);
-    customerLayout->addWidget(new QLabel("Teléfono:"), 1, 2);
-    customerLayout->addWidget(lePhone, 1, 3);
+    customerLayout->addWidget(new QLabel("CIF:"), 1, 0);
+    customerLayout->addWidget(leCIF, 1, 1);
+    customerLayout->addWidget(new QLabel("Contacto:"), 1, 2);
+    customerLayout->addWidget(leContact, 1, 3);
+    customerLayout->addWidget(new QLabel("Teléfono:"), 1, 4);
+    customerLayout->addWidget(lePhone, 1, 5);
 
     customerLayout->addWidget(new QLabel("Dirección:"), 2, 0);
     customerLayout->addWidget(leAddress, 2, 1);
     customerLayout->addWidget(new QLabel("Email:"), 2, 2);
     customerLayout->addWidget(leEmail, 2, 3);
+    customerLayout->addWidget(new QLabel("Fecha: "), 2, 4);
+    customerLayout->addWidget(leFecha, 2, 5);
 
     formLayout->addRow(customerLayout);
 
@@ -95,7 +108,8 @@ void MainWindow::setupUi() {
 
     // --- Conexión para controlar según zona ---
     connect(cbZona, &QComboBox::currentTextChanged, this, [this](const QString &zona){
-        if (zona == "Zona Centro") {
+        if (zona == "Zona Centro")
+        {
             // Zona Centro: dietas siempre desactivadas
             rbDietasSi->setChecked(false);
             rbDietasSi->setEnabled(false);
@@ -103,7 +117,9 @@ void MainWindow::setupUi() {
             rbDietasNo->setEnabled(false);
             spDietas->setEnabled(false);
             spDiasDieta->setEnabled(false);
-        } else {
+        }
+        else
+        {
             // Otras Zonas: dietas habilitadas
             rbDietasSi->setEnabled(true);
             rbDietasNo->setEnabled(true);
@@ -153,15 +169,19 @@ void MainWindow::setupUi() {
         QString materialName = cbMaterials->currentText();
         double unitPrice = 0.0;
 
-        if (materialName == "Añadir material") {
+        if (materialName == "Añadir material")
+        {
             bool ok;
             materialName = QInputDialog::getText(this, "Nuevo material", "Nombre del material:", QLineEdit::Normal, "", &ok);
-            if (!ok || materialName.isEmpty()) return;
+            if (!ok || materialName.isEmpty())
+                return;
 
             unitPrice = QInputDialog::getDouble(this, "Nuevo material", "Precio unitario:", 0.0, 0, 1e6, 2, &ok);
-            if (!ok) return;
-
-        } else {
+            if (!ok)
+                return;
+        }
+        else
+        {
             unitPrice = materialsMap.value(materialName, 0.0);
         }
 
@@ -176,7 +196,8 @@ void MainWindow::setupUi() {
 
     connect(btnRemoveMat, &QPushButton::clicked, this, [=]() {
         auto selectedRows = twMaterials->selectionModel()->selectedRows();
-        for (auto it = selectedRows.rbegin(); it != selectedRows.rend(); ++it) {
+        for (auto it = selectedRows.rbegin(); it != selectedRows.rend(); ++it)
+        {
             twMaterials->removeRow(it->row());
         }
     });
@@ -321,82 +342,52 @@ void MainWindow::setupUi() {
     }
 }
 
-double MainWindow::getSettingDouble(const QString &key, double def) {
+double MainWindow::getSettingDouble(const QString &key, double def)
+{
     QSqlQuery q(Database::instance());
     q.prepare("SELECT value FROM settings WHERE key = ?");
     q.addBindValue(key);
-    if (q.exec() && q.next()) {
-        bool ok=false;
+    if (q.exec() && q.next())
+    {
+        bool ok = false;
         double v = q.value(0).toString().toDouble(&ok);
-        if (ok) return v;
+        if (ok)
+            return v;
     }
     return def;
 }
 
-void MainWindow::loadSettings() {
+void MainWindow::loadSettings()
+{
     // nothing to do now, will read when calculating
 }
 
-/* void MainWindow::onCalculate() {
-    double base = getSettingDouble("price_base", 10.0);
-    double incr = getSettingDouble("increment_per_field", 5.0);
-    double iva = getSettingDouble("iva_pct", 21.0);
-
-    // Count filled "apartados": vamos a contar campos no vacíos entre los apartados clave
-    int count = 0;
-    if (!leClientName->text().isEmpty()) count++;
-    if (sbMetros->value() > 0) count++;
-    if (!cbTipoLocal->currentText().isEmpty()) count++;
-    if (!leLocalidadObra->text().isEmpty()) count++;
-    if (!cbTipoCubierta->currentText().isEmpty()) count++;
-    if (!cbZona->currentText().isEmpty()) count++;
-    if (sbKM->value() > 0) count++;
-    if (sbLitros->value() > 0) count++;
-    if (spDietas->value() > 0) count++;
-    if (spDiasDieta->value() > 0) count++;
-    if (twMaterials->rowCount() > 0) count++;
-    if (sbHoras->value() > 0) count++;
-    if (spDias->value() > 0) count++;
-
-    double total = base + (count * incr);
-
-    // add materials
-    for (int r=0; r<twMaterials->rowCount(); ++r) {
-        double qty = twMaterials->item(r,1)->text().toDouble();
-        double up = twMaterials->item(r,2)->text().toDouble();
-        double line = qty * up;
-        twMaterials->item(r,3)->setText(QString::number(line, 'f', 2));
-        total += line;
-    }
-
-    double totalConIva = total * (1.0 + iva/100.0);
-    lblTotalNoIVA->setText(QString::number(total, 'f', 2) + " €");
-    lblTotalConIVA->setText(QString::number(totalConIva, 'f', 2) + " €");
-} */
-
-void MainWindow::onCalculate() {
+void MainWindow::onCalculate()
+{
     // --- Cargar precios desde archivo ---
-    QMap<QString,double> prices = loadPricesFromFile(QCoreApplication::applicationDirPath() + "/prices.txt");
+    QMap<QString, double> prices = loadPricesFromFile(QCoreApplication::applicationDirPath() + "/prices.txt");
     double iva = getSettingDouble("iva_pct", 21.0);
 
     double total = 0.0;
 
     // --- Sumar materiales ---
-    for (int r=0; r<twMaterials->rowCount(); ++r) {
-        QTableWidgetItem *qtyItem = twMaterials->item(r,1);
-        QTableWidgetItem *priceItem = twMaterials->item(r,2);
-        QTableWidgetItem *totalItem = twMaterials->item(r,3);
+    for (int r = 0; r < twMaterials->rowCount(); ++r)
+    {
+        QTableWidgetItem *qtyItem = twMaterials->item(r, 1);
+        QTableWidgetItem *priceItem = twMaterials->item(r, 2);
+        QTableWidgetItem *totalItem = twMaterials->item(r, 3);
 
         double qty = qtyItem ? qtyItem->text().toDouble() : 0.0;
-        double up  = priceItem ? priceItem->text().toDouble() : 0.0;
+        double up = priceItem ? priceItem->text().toDouble() : 0.0;
         double line = qty * up;
 
-        if (totalItem) totalItem->setText(QString::number(line,'f',2));
+        if (totalItem)
+            totalItem->setText(QString::number(line, 'f', 2));
         total += line;
     }
 
     // --- Coste combustible ---
-    double fuelPrice = prices.value("fuel", 1.4); // €/litro
+    double fuelPrice = prices.value("fuel", 1.4);  // €/litro
     double litrosConsumidos = sbKM->value() * 0.1; // 10 L/100 km
     total += litrosConsumidos * fuelPrice;
 
@@ -409,80 +400,30 @@ void MainWindow::onCalculate() {
     total += sbHoras->value() * horaPrice;
 
     // --- Total con IVA ---
-    double totalConIva = total * (1.0 + iva/100.0);
+    double totalConIva = total * (1.0 + iva / 100.0);
     lblTotalNoIVA->setText(QString::number(total, 'f', 2) + " €");
     lblTotalConIVA->setText(QString::number(totalConIva, 'f', 2) + " €");
 }
 
-
-/* void MainWindow::onCalculate() {
-    // --- Cargar precios desde archivo ---
-    QMap<QString,double> prices = loadPricesFromFile(QCoreApplication::applicationDirPath() + "/prices.txt");
-
-    double base = getSettingDouble("price_base", 10.0);
-    double incr = getSettingDouble("increment_per_field", 5.0);
-    double iva = getSettingDouble("iva_pct", 21.0);
-
-    // --- Contar campos llenos (apartados) ---
-    int count = 0;
-    if (!leClientName->text().isEmpty()) count++;
-    if (sbMetros->value() > 0) count++;
-    if (!cbTipoLocal->currentText().isEmpty()) count++;
-    if (!leLocalidadObra->text().isEmpty()) count++;
-    if (!cbTipoCubierta->currentText().isEmpty()) count++;
-    if (!cbZona->currentText().isEmpty()) count++;
-    if (sbKM->value() > 0) count++;
-    if (sbLitros->value() > 0) count++;
-    if (spDietas->value() > 0) count++;
-    if (spDiasDieta->value() > 0) count++;
-    if (twMaterials->rowCount() > 0) count++;
-    if (sbHoras->value() > 0) count++;
-    if (spDias->value() > 0) count++;
-
-    double total = base + (count * incr);
-
-    // --- Sumar materiales ---
-    for (int r=0; r<twMaterials->rowCount(); ++r) {
-        double qty = twMaterials->item(r,1)->text().toDouble();
-        double up = twMaterials->item(r,2)->text().toDouble();
-        double line = qty * up;
-        twMaterials->item(r,3)->setText(QString::number(line, 'f', 2));
-        total += line;
-    }
-
-    // --- Añadir costes de fuel ---
-    double fuelPrice = prices.value("fuel", 1.4); // €/litro
-    double litrosConsumidos = sbKM->value() * 0.1; // 10 L/100 km
-    total += litrosConsumidos * fuelPrice;
-
-    // Dieta: spDietas * spDiasDieta * precio_unitario
-    double dietaPrice = prices.value("dieta", 300);
-    total += spDietas->value() * spDiasDieta->value() * dietaPrice;
-
-    // Hora de trabajo: sbHoras * precio_unitario
-    double horaPrice = prices.value("hora_trabajo", 80);
-    total += sbHoras->value() * horaPrice;
-
-    double totalConIva = total * (1.0 + iva/100.0);
-    lblTotalNoIVA->setText(QString::number(total, 'f', 2) + " €");
-    lblTotalConIVA->setText(QString::number(totalConIva, 'f', 2) + " €");
-}
- */
-
-void MainWindow::onSaveBudget() {
+void MainWindow::onSaveBudget()
+{
     // grab client -> insert or reuse
     QSqlDatabase d = Database::instance();
     QSqlQuery q(d);
     QString client = leClientName->text();
 
-    q.prepare("INSERT INTO clients(name,company,contact,address,phone,email) VALUES(?,?,?,?,?,?)");
+    q.prepare("INSERT INTO clients(budget,name,company,cif,contact,address,phone,email,fecha) VALUES(?,?,?,?,?,?,?,?,?)");
+    q.addBindValue(leNumPresu->text());
     q.addBindValue(leClientName->text());
     q.addBindValue(leCompany->text());
+    q.addBindValue(leCIF->text());
     q.addBindValue(leContact->text());
     q.addBindValue(leAddress->text());
     q.addBindValue(lePhone->text());
     q.addBindValue(leEmail->text());
-    if (!q.exec()) {
+    q.addBindValue(leFecha->text());
+    if (!q.exec())
+    {
         QMessageBox::warning(this, "DB", "Error al guardar cliente: " + q.lastError().text());
         return;
     }
@@ -490,8 +431,8 @@ void MainWindow::onSaveBudget() {
 
     // budget
     double base = getSettingDouble("price_base", 10.0);
-    double totalNoIva = lblTotalNoIVA->text().replace(" €","").toDouble();
-    double totalConIva = lblTotalConIVA->text().replace(" €","").toDouble();
+    double totalNoIva = lblTotalNoIVA->text().replace(" €", "").toDouble();
+    double totalConIva = lblTotalConIVA->text().replace(" €", "").toDouble();
 
     QSqlQuery qb(d);
     qb.prepare(R"(
@@ -502,7 +443,7 @@ void MainWindow::onSaveBudget() {
     qb.addBindValue(cbTipoLocal->currentText());
     qb.addBindValue(sbMetros->value());
     qb.addBindValue(cbTipoCubierta->currentText());
-    qb.addBindValue(cbZona->currentText()); 
+    qb.addBindValue(cbZona->currentText());
     qb.addBindValue(leLocalidadObra ? leLocalidadObra->text() : QString());
     qb.addBindValue(sbKM->value());
     qb.addBindValue(sbLitros->value());
@@ -513,7 +454,8 @@ void MainWindow::onSaveBudget() {
     qb.addBindValue(base);
     qb.addBindValue(totalNoIva);
     qb.addBindValue(totalConIva);
-    if (!qb.exec()) {
+    if (!qb.exec())
+    {
         QMessageBox::warning(this, "DB", "Error al guardar presupuesto: " + qb.lastError().text());
         return;
     }
@@ -522,15 +464,17 @@ void MainWindow::onSaveBudget() {
     // materials
     QSqlQuery qm(d);
     qm.prepare("INSERT INTO materials(budget_id,name,quantity,unit_price) VALUES(?,?,?,?)");
-    for (int r=0; r<twMaterials->rowCount(); ++r) {
-        QString name = twMaterials->item(r,0)->text();
-        double qty = twMaterials->item(r,1)->text().toDouble();
-        double up = twMaterials->item(r,2)->text().toDouble();
+    for (int r = 0; r < twMaterials->rowCount(); ++r)
+    {
+        QString name = twMaterials->item(r, 0)->text();
+        double qty = twMaterials->item(r, 1)->text().toDouble();
+        double up = twMaterials->item(r, 2)->text().toDouble();
         qm.addBindValue(budgetId);
         qm.addBindValue(name);
         qm.addBindValue(qty);
         qm.addBindValue(up);
-        if (!qm.exec()) {
+        if (!qm.exec())
+        {
             qDebug() << "Error saving material:" << qm.lastError().text();
         }
     }
@@ -543,14 +487,17 @@ void MainWindow::onSaveBudget() {
     QMessageBox::information(this, "Guardado", "Presupuesto guardado con id " + QString::number(budgetId));
 }
 
-void MainWindow::onLoadSelectedBudget() {
+void MainWindow::onLoadSelectedBudget()
+{
     auto *it = lwBudgets->currentItem();
-    if (!it) return;
+    if (!it)
+        return;
     int id = it->data(Qt::UserRole).toInt();
     QSqlQuery qb(Database::instance());
     qb.prepare("SELECT client_id, metros, tipo_local, localidad, tipo_cubierta, km, combustible, dietas, horas, dias, zona, dietas_dias FROM budgets WHERE id = ?");
     qb.addBindValue(id);
-    if (!qb.exec() || !qb.next()) return;
+    if (!qb.exec() || !qb.next())
+        return;
     int clientId = qb.value(0).toInt();
     sbMetros->setValue(qb.value(1).toDouble());
     cbTipoLocal->setCurrentText(qb.value(2).toString());
@@ -568,7 +515,8 @@ void MainWindow::onLoadSelectedBudget() {
     QSqlQuery qc(Database::instance());
     qc.prepare("SELECT name,company,contact,address,phone,email FROM clients WHERE id = ?");
     qc.addBindValue(clientId);
-    if (qc.exec() && qc.next()) {
+    if (qc.exec() && qc.next())
+    {
         leClientName->setText(qc.value(0).toString());
         leCompany->setText(qc.value(1).toString());
         leContact->setText(qc.value(2).toString());
@@ -582,34 +530,46 @@ void MainWindow::onLoadSelectedBudget() {
     QSqlQuery qm(Database::instance());
     qm.prepare("SELECT name,quantity,unit_price FROM materials WHERE budget_id = ?");
     qm.addBindValue(id);
-    if (qm.exec()) {
-        while (qm.next()) {
+    if (qm.exec())
+    {
+        while (qm.next())
+        {
             int r = twMaterials->rowCount();
             twMaterials->insertRow(r);
-            twMaterials->setItem(r,0, new QTableWidgetItem(qm.value(0).toString()));
-            twMaterials->setItem(r,1, new QTableWidgetItem(qm.value(1).toString()));
-            twMaterials->setItem(r,2, new QTableWidgetItem(qm.value(2).toString()));
+            twMaterials->setItem(r, 0, new QTableWidgetItem(qm.value(0).toString()));
+            twMaterials->setItem(r, 1, new QTableWidgetItem(qm.value(1).toString()));
+            twMaterials->setItem(r, 2, new QTableWidgetItem(qm.value(2).toString()));
             double line = qm.value(1).toDouble() * qm.value(2).toDouble();
-            twMaterials->setItem(r,3, new QTableWidgetItem(QString::number(line,'f',2)));
+            twMaterials->setItem(r, 3, new QTableWidgetItem(QString::number(line, 'f', 2)));
         }
     }
     onCalculate();
 }
 
-void MainWindow::onEditPrices() {
+void MainWindow::onEditPrices()
+{
     bool ok;
-    double newBase = QInputDialog::getDouble(this, "Precio base", "Precio base (€):", getSettingDouble("price_base",10.0), 0, 1e9, 2, &ok);
-    if (!ok) return;
-    double newInc = QInputDialog::getDouble(this, "Incremento por apartado", "Incremento (€):", getSettingDouble("increment_per_field",5.0), 0, 1e9, 2, &ok);
-    if (!ok) return;
-    double newIva = QInputDialog::getDouble(this, "IVA (%)", "IVA porcentaje:", getSettingDouble("iva_pct",21.0), 0, 100, 2, &ok);
-    if (!ok) return;
+    double newBase = QInputDialog::getDouble(this, "Precio base", "Precio base (€):", getSettingDouble("price_base", 10.0), 0, 1e9, 2, &ok);
+    if (!ok)
+        return;
+    double newInc = QInputDialog::getDouble(this, "Incremento por apartado", "Incremento (€):", getSettingDouble("increment_per_field", 5.0), 0, 1e9, 2, &ok);
+    if (!ok)
+        return;
+    double newIva = QInputDialog::getDouble(this, "IVA (%)", "IVA porcentaje:", getSettingDouble("iva_pct", 21.0), 0, 100, 2, &ok);
+    if (!ok)
+        return;
 
     QSqlQuery q(Database::instance());
     q.prepare("REPLACE INTO settings(key,value) VALUES(?,?)");
-    q.addBindValue("price_base"); q.addBindValue(QString::number(newBase)); q.exec();
-    q.addBindValue("increment_per_field"); q.addBindValue(QString::number(newInc)); q.exec();
-    q.addBindValue("iva_pct"); q.addBindValue(QString::number(newIva)); q.exec();
+    q.addBindValue("price_base");
+    q.addBindValue(QString::number(newBase));
+    q.exec();
+    q.addBindValue("increment_per_field");
+    q.addBindValue(QString::number(newInc));
+    q.exec();
+    q.addBindValue("iva_pct");
+    q.addBindValue(QString::number(newIva));
+    q.exec();
 
     QMessageBox::information(this, "Ajustes", "Precios actualizados.");
 }

@@ -26,12 +26,15 @@ void Database::ensureSchema() {
     q.exec(R"(
     CREATE TABLE IF NOT EXISTS clients (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      budget TEXT,
       name TEXT,
       company TEXT,
+      cif TEXT,
       contact TEXT,
       address TEXT,
       phone TEXT,
-      email TEXT
+      email TEXT,
+      fecha TEXT
     ))");
     q.exec(R"(
     CREATE TABLE IF NOT EXISTS budgets (

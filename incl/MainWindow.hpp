@@ -44,6 +44,7 @@ private slots:
     void onToggleStatus();
     void updateDistanceAndFuel();
     void updateDietasStatus();
+    void setNextBudgetNumberAndDate();
 
 private:
     void setupUi();
@@ -61,7 +62,7 @@ private:
     QString currentStatus = "Abierta";
     
     // --- Widgets----
-    QLineEdit *leClientName, *leCompany, *leContact, *leAddress, *lePhone, *leEmail, *leLocalidadObra;
+    QLineEdit *leClientName, *leCompany, *leContact, *leAddress, *lePhone, *leEmail, *leCIF, *leNumPresu, *leLocalidadObra, *leFecha;
     QDoubleSpinBox *sbMetros, *sbKM, *sbHoras, *sbLitros;
     QSpinBox *spDietas, *spDias, *spDiasDieta;
     QComboBox *cbTipoLocal, *cbTipoCubierta, *cbZona, *cbDietasNo, cbDietasYes, *cbMaterials;

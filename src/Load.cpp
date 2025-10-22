@@ -62,3 +62,19 @@ void MainWindow::onMaterialChanged(QTableWidgetItem *item) {
     // Opcional: actualizar totales generales aquí si quieres
     onCalculate(); // recalcula totales
 }
+
+
+void MainWindow::setNextBudgetNumberAndDate()
+{
+    QSqlQuery q(Database::instance());
+    q.exec("SELECT MAX(id) FROM budgets");
+    int nextId = 1;
+    if (q.next())
+        nextId = q.value(0).toInt() + 1;
+
+    QString numPresu = QString("P%1").arg(nextId, 4, 10, QChar('0')); // ejemplo: P0001, P0002, ...
+    leNumPresu->setText(numPresu);
+
+    QString fechaHoy = QDate::currentDate().toString("dd/MM/yyyy");
+    leFecha->setText(fechaHoy);
+}

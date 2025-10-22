@@ -33,6 +33,9 @@ void MainWindow::onDeleteSelectedBudget() {
         delete item; // quitar de la lista
         QMessageBox::information(this, "Borrado", "Presupuesto eliminado correctamente.");
     }
+
+    setNextBudgetNumberAndDate();
+
 }
 
 void MainWindow::onNewMaterial() {
@@ -59,6 +62,9 @@ void MainWindow::onDeleteFields() {
     leAddress->clear();
     lePhone->clear();
     leEmail->clear();
+    leFecha->clear();
+    leCIF->clear();
+    leNumPresu->clear();
 
     // --- Campos proyecto ---
     sbMetros->setValue(0);
@@ -91,6 +97,8 @@ void MainWindow::onDeleteFields() {
     // --- Estado interno ---
     currentBudgetId = 0;
     currentStatus = "Abierta";
+
+    setNextBudgetNumberAndDate();
 
     QMessageBox::information(this, "Campos borrados", "Todos los campos se han limpiado correctamente.");
 }
