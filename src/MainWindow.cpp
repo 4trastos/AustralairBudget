@@ -86,109 +86,133 @@ void MainWindow::setupUi()
     sbElevPortes = new QDoubleSpinBox; sbElevPortes->setRange(0, 1e6); sbElevPortes->setSuffix(" €");
     spElevDia = new QSpinBox; spElevDia->setRange(0,1000);
     cbDietasYes = new QComboBox; cbDietasYes->addItems({"No","Si"});
+    leExtra = new QLineEdit;
 
-    // ---------------------- Bloque Obra ----------------------
-    auto *obraLayout = new QGridLayout;
-    obraLayout->addWidget(new QLabel("Tipo de local:"), 0, 0);
-    obraLayout->addWidget(cbTipoLocal, 0, 1);
-    obraLayout->addWidget(new QLabel("Metros cuadrados:"), 0, 2);
-    obraLayout->addWidget(sbMetros, 0, 3);
-    obraLayout->addWidget(new QLabel("Tipo de cubierta:"), 0, 4);
-    obraLayout->addWidget(cbTipoCubierta, 0, 5);
-    
-    obraLayout->addWidget(new QLabel("Elevación:"), 1, 0);
-    obraLayout->addWidget(cbElevador, 1, 1);
-    obraLayout->addWidget(new QLabel("Portes:"), 1, 2);
-    obraLayout->addWidget(sbElevPortes, 1, 3);
-    obraLayout->addWidget(new QLabel("Días:"), 1, 4);
-    obraLayout->addWidget(spElevDia, 1, 5);
+    // ---------------------- Bloque Obra completo en marco ----------------------
+    auto *obraZonaGroup = new QGroupBox("Datos de la obra");
+    auto *obraZonaLayout = new QGridLayout(obraZonaGroup);
 
-    // Columnas expansibles como Cliente
-    obraLayout->setColumnStretch(1, 1);
-    obraLayout->setColumnStretch(3, 1);
-    obraLayout->setColumnStretch(5, 1);
+    // ---- Campos principales de obra ----
+    sbMetros = new QDoubleSpinBox; sbMetros->setRange(0, 1e6); sbMetros->setSuffix(" m²");
+    cbTipoLocal = new QComboBox; cbTipoLocal->addItems({" ··· ","Nave industrial","Local comercial","Vivienda","Complejo Deportivo"});
+    cbTipoCubierta = new QComboBox; cbTipoCubierta->addItems({" ··· ","Chapa","Teja","Cubierta plana","Panel sandwich", "Uralita"});
+    sbKM = new QDoubleSpinBox; sbKM->setRange(0,10000); sbKM->setSuffix(" km");
+    sbLitros = new QDoubleSpinBox; sbLitros->setRange(0,10000); sbLitros->setSuffix(" lts");
+    sbHoras = new QDoubleSpinBox; sbHoras->setRange(0,1e5);
+    spDias = new QSpinBox; spDias->setRange(0,365);
+    leLocalidadObra = new QLineEdit;
 
-    formLayout->addRow(obraLayout);
+    // ---- Elevador ----
+    cbElevador = new QComboBox; cbElevador->addItems({"No","Si"});
+    sbElevPortes = new QDoubleSpinBox; sbElevPortes->setRange(0, 1e6); sbElevPortes->setSuffix(" €");
+    spElevDia = new QSpinBox; spElevDia->setRange(0,1000);
+    sbElevPortes->setEnabled(false);
+    spElevDia->setEnabled(false);
 
-    // ---------------------- Bloque Zona y Dietas ----------------------
+    // ---- Zona y dietas ----
     cbZona = new QComboBox; 
     cbZona->addItems({"Zona Centro","Otras Zonas"});
-
-    // Distancias (para Zona Centro)
+    cbDietasYes = new QComboBox; cbDietasYes->addItems({"No","Si"});
     rbCorta = new QRadioButton("Corta Distancia");
     rbMedia  = new QRadioButton("Media Distancia");
     rbLarga  = new QRadioButton("Larga Distancia");
-
-    // Dietas (para Otras Zonas)
     spDietas = new QSpinBox; spDietas->setRange(0,1000);
     spDiasDieta = new QSpinBox; spDiasDieta->setRange(0,365);
-
     spDietas->setEnabled(false);
     spDiasDieta->setEnabled(false);
-    sbElevPortes->setEnabled(false);
-    spElevDia->setEnabled(false);
     cbDietasYes->setEnabled(false);
 
-    auto *zonaLayout = new QGridLayout;
-    zonaLayout->setColumnStretch(0, 0); // Etiqueta Zona
-    zonaLayout->setColumnStretch(1, 1); // ComboBox Zona
-    zonaLayout->setColumnStretch(2, 0); // Espacio
-    zonaLayout->setColumnStretch(3, 1); // rbCorta
-    zonaLayout->setColumnStretch(4, 1); // rbMedia
-    zonaLayout->setColumnStretch(5, 1); // rbLarga
+    // --- FILA 1: Tipo local, metros, tipo cubierta ---
+    obraZonaLayout->addWidget(new QLabel("Tipo de local:"), 0, 0);
+    obraZonaLayout->addWidget(cbTipoLocal, 0, 1);
+    obraZonaLayout->addWidget(new QLabel("Metros cuadrados:"), 0, 2);
+    obraZonaLayout->addWidget(sbMetros, 0, 3);
+    obraZonaLayout->addWidget(new QLabel("Tipo de cubierta:"), 0, 4);
+    obraZonaLayout->addWidget(cbTipoCubierta, 0, 5);
 
-    zonaLayout->addWidget(new QLabel("Zona:"), 0, 0);
-    zonaLayout->addWidget(cbZona, 0, 1);
-    zonaLayout->addWidget(rbCorta, 0, 3);
-    zonaLayout->addWidget(rbMedia, 0, 4);
-    zonaLayout->addWidget(rbLarga, 0, 5);
+    // --- FILA 2: Elevación, portes, días ---
+    obraZonaLayout->addWidget(new QLabel("Elevación:"), 1, 0);
+    obraZonaLayout->addWidget(cbElevador, 1, 1);
+    obraZonaLayout->addWidget(new QLabel("Portes:"), 1, 2);
+    obraZonaLayout->addWidget(sbElevPortes, 1, 3);
+    obraZonaLayout->addWidget(new QLabel("Días:"), 1, 4);
+    obraZonaLayout->addWidget(spElevDia, 1, 5);
 
-    // --------------- Dietas  -----------------------------------------
-    zonaLayout->addWidget(new QLabel("Dietas:"), 1, 0);
-    zonaLayout->addWidget(cbDietasYes, 1, 1);
-    zonaLayout->addWidget(new QLabel("Nº Operarios:"), 1, 2);
-    zonaLayout->addWidget(spDietas, 1, 3);
-    zonaLayout->addWidget(new QLabel("Días:"), 1, 4);
-    zonaLayout->addWidget(spDiasDieta, 1, 5);
+    // --- FILA 3: Zona centro ---
+    obraZonaLayout->addWidget(new QLabel("Zona:"), 2, 0);
+    obraZonaLayout->addWidget(cbZona, 2, 1);
+    obraZonaLayout->addWidget(rbCorta, 2, 3);
+    obraZonaLayout->addWidget(rbMedia, 2, 4);
+    obraZonaLayout->addWidget(rbLarga, 2, 5);
 
-    formLayout->addRow(zonaLayout);
+    // --- FILA 4: Dietas otras zonas ---
+    obraZonaLayout->addWidget(new QLabel("Dietas:"), 3, 0);
+    obraZonaLayout->addWidget(cbDietasYes, 3, 1);
+    obraZonaLayout->addWidget(new QLabel("Nº Operarios:"), 3, 2);
+    obraZonaLayout->addWidget(spDietas, 3, 3);
+    obraZonaLayout->addWidget(new QLabel("Días:"), 3, 4);
+    obraZonaLayout->addWidget(spDiasDieta, 3, 5);
+
+    // --- FILA 5: Localidad y Kilometros ---
+    obraZonaLayout->addWidget(new QLabel("Localidad:"), 4, 0);
+    obraZonaLayout->addWidget(leLocalidadObra, 4, 1);
+    obraZonaLayout->addWidget(new QLabel("KM desplazamiento:"), 4, 2);
+    obraZonaLayout->addWidget(sbKM, 4, 3);
+    obraZonaLayout->addWidget(new QLabel("Combustible:"), 4, 4);
+    obraZonaLayout->addWidget(sbLitros, 4, 5);
+    //obraZonaLayout->addWidget(new QLineEdit, 4, 3);
+
+    // --- FILA 6: Horas y Operarios ---
+    obraZonaLayout->addWidget(new QLabel("Horas Estimadas:"), 5, 0);
+    obraZonaLayout->addWidget(sbHoras, 5, 1);
+    obraZonaLayout->addWidget(new QLabel("Nº Operarios:"), 5, 2);
+    obraZonaLayout->addWidget(spDias, 5, 3);
+    obraZonaLayout->addWidget(new QLabel("       "), 5, 4);
+    obraZonaLayout->addWidget(leExtra, 5, 5);
+    leExtra->setEnabled(false);
+
+    // --- Proporciones y márgenes ---
+    obraZonaLayout->setColumnStretch(1, 1);
+    obraZonaLayout->setColumnStretch(3, 1);
+    obraZonaLayout->setColumnStretch(5, 1);
+    obraZonaLayout->setContentsMargins(10, 10, 10, 10);
+    obraZonaLayout->setHorizontalSpacing(12);
+    obraZonaLayout->setVerticalSpacing(8);
+
+    // Añadir el bloque completo al formulario principal
+    formLayout->addRow(obraZonaGroup);
 
     // ---------------------- Lógica de desbloqueo ----------------------
+    connect(cbElevador, &QComboBox::currentTextChanged, this, [=](const QString &elev){
+        bool enabled = (elev == "Si");
+        sbElevPortes->setEnabled(enabled);
+        spElevDia->setEnabled(enabled);
+    });
+
     connect(cbZona, &QComboBox::currentTextChanged, this, [=](const QString &zona){
         if (zona == "Zona Centro") {
-            // Desbloquea distancias
             rbCorta->setEnabled(true);
             rbMedia->setEnabled(true);
             rbLarga->setEnabled(true);
-
-            // Bloquea dietas
-            spDietas->setEnabled(false);
-            spDiasDieta->setEnabled(false);
-
-            // Pone Dietas en NO
             cbDietasYes->setCurrentText("No");
             cbDietasYes->setEnabled(false);
+            spDietas->setEnabled(false);
+            spDiasDieta->setEnabled(false);
         } else if (zona == "Otras Zonas") {
-            // Bloquea distancias
             rbCorta->setEnabled(false);
             rbMedia->setEnabled(false);
             rbLarga->setEnabled(false);
-
-            // Desbloquea dietas
+            cbDietasYes->setEnabled(true);
+            cbDietasYes->setCurrentText("Si");
             spDietas->setEnabled(true);
             spDiasDieta->setEnabled(true);
-
-            cbDietasYes->setCurrentText("Si");
-            cbDietasYes->setEnabled(true);
         } else {
-            // Ninguna opción seleccionada: todo bloqueado
             rbCorta->setEnabled(false);
             rbMedia->setEnabled(false);
             rbLarga->setEnabled(false);
+            cbDietasYes->setEnabled(false);
             spDietas->setEnabled(false);
             spDiasDieta->setEnabled(false);
-            cbDietasYes->setCurrentText("No");
-            cbDietasYes->setEnabled(false);
         }
     });
 
@@ -208,85 +232,91 @@ void MainWindow::setupUi()
     connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
         this, &MainWindow::updateDistanceAndFuel);
 
-    // --- Campos restantes ---
-    formLayout->addRow("Localidad:", leLocalidadObra);
-    formLayout->addRow("KM desplazamiento:", sbKM);
-    formLayout->addRow("Combustible:", sbLitros);
-    formLayout->addRow("Horas estimadas:", sbHoras);
-    formLayout->addRow("Días de trabajo:", spDias); // días generales
 
-    // --- Tabla materiales ---
+    // ---------------------- Bloque Materiales en marco ----------------------
+    auto *materialsGroup = new QGroupBox("Materiales");
+    auto *materialsLayout = new QVBoxLayout(materialsGroup);
+
+    // --- Tabla de materiales ---
     twMaterials = new QTableWidget(0, 4);
     twMaterials->setHorizontalHeaderLabels({"Nombre", "Cantidad", "Precio unit.", "Total"});
     twMaterials->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    materialsLayout->addWidget(twMaterials);
 
-    // --- Cargar materiales desde archivo ---
-    //QMap<QString, double> materialsMap = loadMaterialsFromFile("/materials.txt");
-    QMap<QString, double> materialsMap = loadMaterialsFromFile(QCoreApplication::applicationDirPath() + "/materials.txt");
+    // --- Cargar materiales desde archivo (member variable) ---
+    materialsMap = loadMaterialsFromFile(QCoreApplication::applicationDirPath() + "/materials.txt");
 
-
-    // --- Combobox para seleccionar materiales ---
+    // --- Combobox y botones ---
     cbMaterials = new QComboBox;
     for (auto it = materialsMap.begin(); it != materialsMap.end(); ++it)
         cbMaterials->addItem(it.key());
     cbMaterials->addItem("Añadir material"); // opción para introducir manualmente
 
-    // --- Botones ---
     btnAddMat = new QPushButton("Añadir material");
     btnRemoveMat = new QPushButton("Eliminar material");
-
-    // --- Conexiones ---
-    connect(btnAddMat, &QPushButton::clicked, this, [=]() {
-        QString materialName = cbMaterials->currentText();
-        double unitPrice = 0.0;
-
-        if (materialName == "Añadir material")
-        {
-            bool ok;
-            materialName = QInputDialog::getText(this, "Nuevo material", "Nombre del material:", QLineEdit::Normal, "", &ok);
-            if (!ok || materialName.isEmpty())
-                return;
-
-            unitPrice = QInputDialog::getDouble(this, "Nuevo material", "Precio unitario:", 0.0, 0, 1e6, 2, &ok);
-            if (!ok)
-                return;
-        }
-        else
-        {
-            unitPrice = materialsMap.value(materialName, 0.0);
-        }
-
-        int row = twMaterials->rowCount();
-        twMaterials->insertRow(row);
-
-        twMaterials->setItem(row, 0, new QTableWidgetItem(materialName));
-        twMaterials->setItem(row, 1, new QTableWidgetItem("1")); // cantidad inicial 1
-        twMaterials->setItem(row, 2, new QTableWidgetItem(QString::number(unitPrice, 'f', 2)));
-        twMaterials->setItem(row, 3, new QTableWidgetItem(QString::number(unitPrice, 'f', 2)));
-    });
-
-    connect(btnRemoveMat, &QPushButton::clicked, this, [=]() {
-        auto selectedRows = twMaterials->selectionModel()->selectedRows();
-        for (auto it = selectedRows.rbegin(); it != selectedRows.rend(); ++it)
-        {
-            twMaterials->removeRow(it->row());
-        }
-    });
-
-    // --- Layout ---
-    QWidget *matWidget = new QWidget;
-    auto *matLayout = new QVBoxLayout;
-    matLayout->addWidget(twMaterials);
 
     auto *matBtns = new QHBoxLayout;
     matBtns->addWidget(cbMaterials);
     matBtns->addWidget(btnAddMat);
     matBtns->addWidget(btnRemoveMat);
+    materialsLayout->addLayout(matBtns);
 
-    matLayout->addLayout(matBtns);
-    matWidget->setLayout(matLayout);
+    materialsLayout->setContentsMargins(10,10,10,10);
 
-    formLayout->addRow("Materiales:", matWidget);
+    // --- Conexiones ---
+    connect(btnAddMat, &QPushButton::clicked, this, [this]() {
+        QString materialName = cbMaterials->currentText();
+        double unitPrice = 0.0;
+
+        if (materialName == "Añadir material") {
+            bool ok;
+            materialName = QInputDialog::getText(this, "Nuevo material", "Nombre del material:", QLineEdit::Normal, "", &ok);
+            if (!ok || materialName.isEmpty()) return;
+
+            unitPrice = QInputDialog::getDouble(this, "Nuevo material", "Precio unitario:", 0.0, 0, 1e6, 2, &ok);
+            if (!ok) return;
+
+            // Guardamos en el map miembro y añadimos al comboBox
+            materialsMap[materialName] = unitPrice;
+            cbMaterials->insertItem(cbMaterials->count()-1, materialName);
+        } else {
+            unitPrice = materialsMap.value(materialName, 0.0);
+        }
+
+        // Insertar fila en la tabla
+        int row = twMaterials->rowCount();
+        twMaterials->insertRow(row);
+        twMaterials->setItem(row, 0, new QTableWidgetItem(materialName));
+        twMaterials->setItem(row, 1, new QTableWidgetItem("1"));
+        twMaterials->setItem(row, 2, new QTableWidgetItem(QString::number(unitPrice,'f',2)));
+        twMaterials->setItem(row, 3, new QTableWidgetItem(QString::number(unitPrice,'f',2)));
+    });
+
+    // Configurar selección de filas completas (una sola vez)
+    twMaterials->setSelectionBehavior(QAbstractItemView::SelectRows);
+    twMaterials->setSelectionMode(QAbstractItemView::ExtendedSelection); // permite varias filas
+
+    // Conexión corregida para eliminar materiales
+    connect(btnRemoveMat, &QPushButton::clicked, this, [this]() {
+        auto selectedRows = twMaterials->selectionModel()->selectedRows();
+
+        // recorre en orden inverso para no desordenar el índice
+        std::sort(selectedRows.begin(), selectedRows.end(), [](const QModelIndex &a, const QModelIndex &b){
+            return a.row() > b.row();
+        });
+
+        for (const auto &index : selectedRows) {
+            twMaterials->removeRow(index.row());
+        }
+
+        // recalcular totales después de eliminar
+        onCalculate();
+    });
+
+
+    // --- Añadir el grupo al form layout ---
+    formLayout->addRow(materialsGroup);
+
 
 
     // ---------------------- Botones ----------------------
@@ -593,9 +623,6 @@ void MainWindow::onSaveBudget()
     }
 
     // add to list widget
-   /*  auto *it = new QListWidgetItem(QString::number(budgetId) + " - " + QDateTime::currentDateTime().toString());
-    it->setData(Qt::UserRole, budgetId);
-    lwBudgets->insertItem(0, it); */
     QString clientName = leClientName->text();
     QString fecha = QDateTime::currentDateTime().toString("ddd MMM dd HH:mm:ss yyyy");
     QString estado = "ABIERTA";

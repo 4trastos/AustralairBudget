@@ -6,6 +6,6 @@ Fontanería;500
 Electricidad;350
 Magiq-touch;680
 Plataforma Elevadora;340
-Tornillos;0,15
-Remaches;0,10
+Tornillos;0.15
+Remaches;0.10
 Pasarela;70
