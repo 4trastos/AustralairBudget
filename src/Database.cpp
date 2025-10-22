@@ -43,6 +43,7 @@ void Database::ensureSchema() {
       tipo_local TEXT,
       metros REAL,
       tipo_cubierta TEXT,
+      elevación TEXT,
       zona TEXT,
       localidad TEXT,
       km REAL,

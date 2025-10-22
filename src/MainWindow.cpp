@@ -54,14 +54,20 @@ void MainWindow::setupUi()
 
     formLayout->addRow(customerLayout);
 
-    // ---------------------- Línea azul separadora ----------------------
-    QFrame *blueLine = new QFrame;
-    blueLine->setFrameShape(QFrame::HLine);
-    blueLine->setFrameShadow(QFrame::Sunken);
-    blueLine->setStyleSheet("color: #3498DB; background-color: #3498DB; max-height: 3px;");
-    formLayout->addRow(blueLine);
+    // ---------------------- Línea separadora profesional ----------------------
+    QFrame *line = new QFrame;
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    line->setFixedHeight(3);
+    line->setStyleSheet(R"(
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                    stop:0 #3498DB, stop:0.5 #2ECC71, stop:1 #3498DB);
+        border: 0px;
+        border-radius: 1px;
+    )");
+    formLayout->addRow(line);
 
-    // ---------------------- Campos proyecto ----------------------
+    // ---------------------- Bloque Obra ----------------------
     sbMetros = new QDoubleSpinBox; sbMetros->setRange(0, 1e6); sbMetros->setSuffix(" m²");
     cbTipoLocal = new QComboBox; cbTipoLocal->addItems({" ··· ","Nave industrial","Local comercial","Vivienda","Complejo Deportivo"});
     cbTipoCubierta = new QComboBox; cbTipoCubierta->addItems({" ··· ","Chapa","Teja","Cubierta plana","Panel sandwich", "Uralita"});
@@ -71,63 +77,117 @@ void MainWindow::setupUi()
     spDietas = new QSpinBox; spDietas->setRange(0,1000);
     spDiasDieta = new QSpinBox; spDiasDieta->setRange(0,365); // días asociados a dietas
     spDias = new QSpinBox; spDias->setRange(0,365); // días de trabajo generales
-    cbZona = new QComboBox; cbZona->addItems({" ··· ","Zona Centro","Otras Zonas"});
+    cbZona = new QComboBox;
     leLocalidadObra = new QLineEdit;
+    cbElevador = new QComboBox; cbElevador->addItems({"No","Si"});
+    sbElevPortes = new QDoubleSpinBox; sbElevPortes->setRange(0, 1e6); sbElevPortes->setSuffix(" €");
+    spElevDia = new QSpinBox; spElevDia->setRange(0,1000);
 
-    // --- Campos proyecto básicos ---
-    formLayout->addRow("Tipo de local:", cbTipoLocal);
-    formLayout->addRow("Metros cuadrados:", sbMetros);
-    formLayout->addRow("Tipo de cubierta:", cbTipoCubierta);
-    formLayout->addRow("Zona:", cbZona);
+    // ---------------------- Bloque Obra ----------------------
+    auto *obraLayout = new QGridLayout;
+    obraLayout->addWidget(new QLabel("Tipo de local:"), 0, 0);
+    obraLayout->addWidget(cbTipoLocal, 0, 1);
+    obraLayout->addWidget(new QLabel("Metros cuadrados:"), 0, 2);
+    obraLayout->addWidget(sbMetros, 0, 3);
+    obraLayout->addWidget(new QLabel("Tipo de cubierta:"), 0, 4);
+    obraLayout->addWidget(cbTipoCubierta, 0, 5);
+    
+    obraLayout->addWidget(new QLabel("Elevación:"), 1, 0);
+    obraLayout->addWidget(cbElevador, 1, 1);
+    obraLayout->addWidget(new QLabel("Portes:"), 1, 2);
+    obraLayout->addWidget(sbElevPortes, 1, 3);
+    obraLayout->addWidget(new QLabel("Días:"), 1, 4);
+    obraLayout->addWidget(spElevDia, 1, 5);
 
-    // --- Bloque Dietas (Sí/No) ---
-    QHBoxLayout *dietasLayout = new QHBoxLayout;
-    rbDietasSi = new QRadioButton("Sí");   // declarados como miembros de la clase
-    rbDietasNo = new QRadioButton("No");
-    rbDietasNo->setChecked(true);
+    // Columnas expansibles como Cliente
+    obraLayout->setColumnStretch(1, 1);
+    obraLayout->setColumnStretch(3, 1);
+    obraLayout->setColumnStretch(5, 1);
 
-    dietasLayout->addWidget(rbDietasSi);
-    dietasLayout->addWidget(rbDietasNo);
+    formLayout->addRow(obraLayout);
 
-    QWidget *dietasWidget = new QWidget;
-    dietasWidget->setLayout(dietasLayout);
+    // ---------------------- Bloque Zona ----------------------
+    cbZona = new QComboBox; 
+    cbZona->addItems({"Zona Centro","Otras Zonas"});
 
-    formLayout->addRow("Dietas:", dietasWidget);
-    formLayout->addRow("Empleados (dieta):", spDietas);
-    formLayout->addRow("Días (dieta):", spDiasDieta);
+    // Distancias (para Zona Centro)
+    rbCorta = new QRadioButton("Corta Distancia");
+    rbMedia  = new QRadioButton("Media Distancia");
+    rbLarga  = new QRadioButton("Larga Distancia");
 
-    // --- Desactivar inicialmente ---
+    // Dietas (para Otras Zonas)
+    spDietas = new QSpinBox; spDietas->setRange(0,1000);
+    spDiasDieta = new QSpinBox; spDiasDieta->setRange(0,365);
+
+    // rbCorta->setEnabled(false);
+    // rbMedia->setEnabled(false);
+    // rbLarga->setEnabled(false);
     spDietas->setEnabled(false);
     spDiasDieta->setEnabled(false);
+    sbElevPortes->setEnabled(false);
+    spElevDia->setEnabled(false);
 
-    // --- Conexión para controlar dietas ---
-    connect(rbDietasSi, &QRadioButton::toggled, this, [this](bool checked){
-        spDietas->setEnabled(checked);
-        spDiasDieta->setEnabled(checked);
-    });
+    auto *zonaLayout = new QGridLayout;
+    zonaLayout->setColumnStretch(0, 0); // Etiqueta Zona
+    zonaLayout->setColumnStretch(1, 1); // ComboBox Zona
+    zonaLayout->setColumnStretch(2, 0); // Espacio
+    zonaLayout->setColumnStretch(3, 1); // rbCorta
+    zonaLayout->setColumnStretch(4, 1); // rbMedia
+    zonaLayout->setColumnStretch(5, 1); // rbLarga
 
-    // --- Conexión para controlar según zona ---
-    connect(cbZona, &QComboBox::currentTextChanged, this, [this](const QString &zona){
-        if (zona == "Zona Centro")
-        {
-            // Zona Centro: dietas siempre desactivadas
-            rbDietasSi->setChecked(false);
-            rbDietasSi->setEnabled(false);
-            rbDietasNo->setChecked(true);
-            rbDietasNo->setEnabled(false);
+    zonaLayout->addWidget(new QLabel("Zona:"), 0, 0);
+    zonaLayout->addWidget(cbZona, 0, 1);
+
+    // Distancias (Zona Centro)
+    zonaLayout->addWidget(rbCorta, 0, 3);
+    zonaLayout->addWidget(rbMedia, 0, 4);
+    zonaLayout->addWidget(rbLarga, 0, 5);
+
+    // Dietas (Otras Zonas)
+    zonaLayout->addWidget(new QLabel("Nº Operarios (dietas):"), 2, 0);
+    zonaLayout->addWidget(spDietas, 2, 1);
+    zonaLayout->addWidget(new QLabel("Días (dietas):"), 2, 2);
+    zonaLayout->addWidget(spDiasDieta, 2, 3);
+
+    formLayout->addRow(zonaLayout);
+
+    // ---------------------- Lógica de desbloqueo ----------------------
+    connect(cbZona, &QComboBox::currentTextChanged, this, [=](const QString &zona){
+        if (zona == "Zona Centro") {
+            // Desbloquea distancias
+            rbCorta->setEnabled(true);
+            rbMedia->setEnabled(true);
+            rbLarga->setEnabled(true);
+
+            // Bloquea dietas
+            spDietas->setEnabled(false);
+            spDiasDieta->setEnabled(false);
+        } else if (zona == "Otras Zonas") {
+            // Bloquea distancias
+            rbCorta->setEnabled(false);
+            rbMedia->setEnabled(false);
+            rbLarga->setEnabled(false);
+
+            // Desbloquea dietas
+            spDietas->setEnabled(true);
+            spDiasDieta->setEnabled(true);
+        } else {
+            // Ninguna opción seleccionada: todo bloqueado
+            rbCorta->setEnabled(false);
+            rbMedia->setEnabled(false);
+            rbLarga->setEnabled(false);
             spDietas->setEnabled(false);
             spDiasDieta->setEnabled(false);
         }
-        else
-        {
-            // Otras Zonas: dietas habilitadas
-            rbDietasSi->setEnabled(true);
-            rbDietasNo->setEnabled(true);
-            spDietas->setEnabled(rbDietasSi->isChecked());
-            spDiasDieta->setEnabled(rbDietasSi->isChecked());
-        }
     });
 
+    // ---------------------- Lógica Elevador ----------------------
+    connect(cbElevador, &QComboBox::currentTextChanged, this, [=](const QString &elevador){
+        bool elevSi = (elevador == "Si");
+
+        sbElevPortes->setEnabled(elevSi);
+        spElevDia->setEnabled(elevSi);
+    });
 
     // --- Conexión para Kilometros / Combustible ---
     connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
@@ -477,13 +537,14 @@ void MainWindow::onSaveBudget()
 
     QSqlQuery qb(d);
     qb.prepare(R"(
-        INSERT INTO budgets(client_id, tipo_local, metros, tipo_cubierta, zona, localidad, km, combustible, dietas, dietas_dias, horas, dias, base_price, total_no_iva, total_con_iva)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        INSERT INTO budgets(client_id, tipo_local, metros, tipo_cubierta, elevación, zona, localidad, km, combustible, dietas, dietas_dias, horas, dias, base_price, total_no_iva, total_con_iva)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     )");
     qb.addBindValue(clientId);
     qb.addBindValue(cbTipoLocal->currentText());
     qb.addBindValue(sbMetros->value());
     qb.addBindValue(cbTipoCubierta->currentText());
+    qb.addBindValue(cbElevador->currentText());
     qb.addBindValue(cbZona->currentText());
     qb.addBindValue(leLocalidadObra ? leLocalidadObra->text() : QString());
     qb.addBindValue(sbKM->value());

@@ -63,13 +63,13 @@ private:
     
     // --- Widgets----
     QLineEdit *leClientName, *leCompany, *leContact, *leAddress, *lePhone, *leEmail, *leCIF, *leNumPresu, *leLocalidadObra, *leFecha;
-    QDoubleSpinBox *sbMetros, *sbKM, *sbHoras, *sbLitros;
-    QSpinBox *spDietas, *spDias, *spDiasDieta;
-    QComboBox *cbTipoLocal, *cbTipoCubierta, *cbZona, *cbDietasNo, cbDietasYes, *cbMaterials;
+    QDoubleSpinBox *sbMetros, *sbKM, *sbHoras, *sbLitros, *sbElevPortes;
+    QSpinBox *spDietas, *spDias, *spDiasDieta, *spElevDia;
+    QComboBox *cbTipoLocal, *cbTipoCubierta, *cbZona, *cbDietasNo, cbDietasYes, *cbMaterials, *cbElevador;
     QTableWidget *twMaterials;
     QPushButton *btnAddMat, *btnRemoveMat, *btnCalc, *btnSave, *btnPDF, *btnPrint, *btnDelFields, *btnToggleStatus, *btnNewBudget, *btnStart;
     QListWidget *lwBudgets;
-    QRadioButton *rbDietasSi, *rbDietasNo;
+    QRadioButton *rbDietasSi, *rbDietasNo, *rbCorta, *rbMedia, *rbLarga;
 
     // --- Totales ---
     QLabel *lblTotalNoIVA, *lblTotalConIVA;

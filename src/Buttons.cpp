@@ -80,6 +80,7 @@ void MainWindow::onDeleteFields() {
     cbTipoLocal->setCurrentIndex(0);
     cbTipoCubierta->setCurrentIndex(0);
     cbZona->setCurrentIndex(0);
+    cbElevador->setCurrentIndex(0);
 
     // --- RadioButtons dietas ---
     //if (rbDietasNo) rbDietasNo->setChecked(true);  // resetea a "No"
