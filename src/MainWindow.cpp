@@ -23,14 +23,22 @@ void MainWindow::setupUi()
     // ---------------------- Formulario ----------------------
     auto *formLayout = new QFormLayout;
 
-    // --- Campos cliente ---
-    leClientName = new QLineEdit; leCompany = new QLineEdit;
-    leContact = new QLineEdit; leAddress = new QLineEdit;
-    lePhone = new QLineEdit; leEmail = new QLineEdit;
-    leCIF = new QLineEdit; leNumPresu = new QLineEdit;
+    // ---------------------- Bloque Datos del Cliente ----------------------
+    auto *customerGroup = new QGroupBox("Datos del cliente");
+    auto *customerLayout = new QGridLayout(customerGroup);
+
+    // Campos cliente
+    leClientName = new QLineEdit; 
+    leCompany = new QLineEdit;
+    leContact = new QLineEdit; 
+    leAddress = new QLineEdit;
+    lePhone = new QLineEdit; 
+    leEmail = new QLineEdit;
+    leCIF = new QLineEdit; 
+    leNumPresu = new QLineEdit;
     leFecha = new QLineEdit;
 
-    auto *customerLayout = new QGridLayout;
+    // Fila 0
     customerLayout->addWidget(new QLabel("Nº Presp.:"), 0, 0);
     customerLayout->addWidget(leNumPresu, 0, 1);
     customerLayout->addWidget(new QLabel("Cliente (Empresa):"), 0, 2);
@@ -38,6 +46,7 @@ void MainWindow::setupUi()
     customerLayout->addWidget(new QLabel("Obra:"), 0, 4);
     customerLayout->addWidget(leCompany, 0, 5);
 
+    // Fila 1
     customerLayout->addWidget(new QLabel("CIF:"), 1, 0);
     customerLayout->addWidget(leCIF, 1, 1);
     customerLayout->addWidget(new QLabel("Contacto:"), 1, 2);
@@ -45,27 +54,21 @@ void MainWindow::setupUi()
     customerLayout->addWidget(new QLabel("Teléfono:"), 1, 4);
     customerLayout->addWidget(lePhone, 1, 5);
 
+    // Fila 2
     customerLayout->addWidget(new QLabel("Dirección:"), 2, 0);
     customerLayout->addWidget(leAddress, 2, 1);
     customerLayout->addWidget(new QLabel("Email:"), 2, 2);
     customerLayout->addWidget(leEmail, 2, 3);
-    customerLayout->addWidget(new QLabel("Fecha: "), 2, 4);
+    customerLayout->addWidget(new QLabel("Fecha:"), 2, 4);
     customerLayout->addWidget(leFecha, 2, 5);
 
-    formLayout->addRow(customerLayout);
+    // Márgenes proporcionales
+    customerLayout->setContentsMargins(10, 10, 10, 10);
+    customerLayout->setHorizontalSpacing(12);
+    customerLayout->setVerticalSpacing(8);
 
-    // ---------------------- Línea separadora profesional ----------------------
-    QFrame *line = new QFrame;
-    line->setFrameShape(QFrame::HLine);
-    line->setFrameShadow(QFrame::Sunken);
-    line->setFixedHeight(3);
-    line->setStyleSheet(R"(
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                    stop:0 #3498DB, stop:0.5 #2ECC71, stop:1 #3498DB);
-        border: 0px;
-        border-radius: 1px;
-    )");
-    formLayout->addRow(line);
+    // Añadir al layout principal
+    formLayout->addRow(customerGroup);
 
     // ---------------------- Bloque Obra ----------------------
     sbMetros = new QDoubleSpinBox; sbMetros->setRange(0, 1e6); sbMetros->setSuffix(" m²");
@@ -82,6 +85,7 @@ void MainWindow::setupUi()
     cbElevador = new QComboBox; cbElevador->addItems({"No","Si"});
     sbElevPortes = new QDoubleSpinBox; sbElevPortes->setRange(0, 1e6); sbElevPortes->setSuffix(" €");
     spElevDia = new QSpinBox; spElevDia->setRange(0,1000);
+    cbDietasYes = new QComboBox; cbDietasYes->addItems({"No","Si"});
 
     // ---------------------- Bloque Obra ----------------------
     auto *obraLayout = new QGridLayout;
@@ -106,7 +110,7 @@ void MainWindow::setupUi()
 
     formLayout->addRow(obraLayout);
 
-    // ---------------------- Bloque Zona ----------------------
+    // ---------------------- Bloque Zona y Dietas ----------------------
     cbZona = new QComboBox; 
     cbZona->addItems({"Zona Centro","Otras Zonas"});
 
@@ -119,13 +123,11 @@ void MainWindow::setupUi()
     spDietas = new QSpinBox; spDietas->setRange(0,1000);
     spDiasDieta = new QSpinBox; spDiasDieta->setRange(0,365);
 
-    // rbCorta->setEnabled(false);
-    // rbMedia->setEnabled(false);
-    // rbLarga->setEnabled(false);
     spDietas->setEnabled(false);
     spDiasDieta->setEnabled(false);
     sbElevPortes->setEnabled(false);
     spElevDia->setEnabled(false);
+    cbDietasYes->setEnabled(false);
 
     auto *zonaLayout = new QGridLayout;
     zonaLayout->setColumnStretch(0, 0); // Etiqueta Zona
@@ -137,17 +139,17 @@ void MainWindow::setupUi()
 
     zonaLayout->addWidget(new QLabel("Zona:"), 0, 0);
     zonaLayout->addWidget(cbZona, 0, 1);
-
-    // Distancias (Zona Centro)
     zonaLayout->addWidget(rbCorta, 0, 3);
     zonaLayout->addWidget(rbMedia, 0, 4);
     zonaLayout->addWidget(rbLarga, 0, 5);
 
-    // Dietas (Otras Zonas)
-    zonaLayout->addWidget(new QLabel("Nº Operarios (dietas):"), 2, 0);
-    zonaLayout->addWidget(spDietas, 2, 1);
-    zonaLayout->addWidget(new QLabel("Días (dietas):"), 2, 2);
-    zonaLayout->addWidget(spDiasDieta, 2, 3);
+    // --------------- Dietas  -----------------------------------------
+    zonaLayout->addWidget(new QLabel("Dietas:"), 1, 0);
+    zonaLayout->addWidget(cbDietasYes, 1, 1);
+    zonaLayout->addWidget(new QLabel("Nº Operarios:"), 1, 2);
+    zonaLayout->addWidget(spDietas, 1, 3);
+    zonaLayout->addWidget(new QLabel("Días:"), 1, 4);
+    zonaLayout->addWidget(spDiasDieta, 1, 5);
 
     formLayout->addRow(zonaLayout);
 
@@ -162,6 +164,10 @@ void MainWindow::setupUi()
             // Bloquea dietas
             spDietas->setEnabled(false);
             spDiasDieta->setEnabled(false);
+
+            // Pone Dietas en NO
+            cbDietasYes->setCurrentText("No");
+            cbDietasYes->setEnabled(false);
         } else if (zona == "Otras Zonas") {
             // Bloquea distancias
             rbCorta->setEnabled(false);
@@ -171,6 +177,9 @@ void MainWindow::setupUi()
             // Desbloquea dietas
             spDietas->setEnabled(true);
             spDiasDieta->setEnabled(true);
+
+            cbDietasYes->setCurrentText("Si");
+            cbDietasYes->setEnabled(true);
         } else {
             // Ninguna opción seleccionada: todo bloqueado
             rbCorta->setEnabled(false);
@@ -178,6 +187,8 @@ void MainWindow::setupUi()
             rbLarga->setEnabled(false);
             spDietas->setEnabled(false);
             spDiasDieta->setEnabled(false);
+            cbDietasYes->setCurrentText("No");
+            cbDietasYes->setEnabled(false);
         }
     });
 
