@@ -101,6 +101,7 @@ void MainWindow::setupUi()
     sbHoras = new QDoubleSpinBox; sbHoras->setRange(0,1e5);
     spDias = new QSpinBox; spDias->setRange(0,365);
     leLocalidadObra = new QLineEdit;
+    spOperarios = new QSpinBox;spOperarios->setRange(0,60);
 
     // ---- Elevador ----
     cbElevador = new QComboBox; cbElevador->addItems({"No","Si"});
@@ -163,12 +164,12 @@ void MainWindow::setupUi()
     //obraZonaLayout->addWidget(new QLineEdit, 4, 3);
 
     // --- FILA 6: Horas y Operarios ---
-    obraZonaLayout->addWidget(new QLabel("Horas Estimadas:"), 5, 0);
-    obraZonaLayout->addWidget(sbHoras, 5, 1);
-    obraZonaLayout->addWidget(new QLabel("Nº Operarios:"), 5, 2);
+    obraZonaLayout->addWidget(new QLabel("Nº Operarios:"), 5, 0);
+    obraZonaLayout->addWidget(spOperarios, 5, 1);
+    obraZonaLayout->addWidget(new QLabel("Días"), 5, 2);
     obraZonaLayout->addWidget(spDias, 5, 3);
-    obraZonaLayout->addWidget(new QLabel("       "), 5, 4);
-    obraZonaLayout->addWidget(leExtra, 5, 5);
+    obraZonaLayout->addWidget(new QLabel("Horas Estimadas:"), 5, 4);
+    obraZonaLayout->addWidget(sbHoras, 5, 5);
     leExtra->setEnabled(false);
 
     // --- Proporciones y márgenes ---
@@ -215,6 +216,32 @@ void MainWindow::setupUi()
             spDiasDieta->setEnabled(false);
         }
     });
+
+    // --- Sincronizar operarios y días generales con dietas ---
+    auto syncGeneralFromDietas = [=]() {
+        if (cbDietasYes->currentText() == "Si") {
+            spOperarios->setValue(spDietas->value());
+            spDias->setValue(spDiasDieta->value());
+            spOperarios->setEnabled(false);
+            spDias->setEnabled(false);
+        } else {
+            spOperarios->setEnabled(true);
+            spDias->setEnabled(true);
+        }
+    };
+
+    // --- Conectar cambios ---
+    connect(cbDietasYes, &QComboBox::currentTextChanged, this, syncGeneralFromDietas);
+    connect(spDietas, QOverload<int>::of(&QSpinBox::valueChanged), this, [=](int val){
+        if (cbDietasYes->currentText() == "Si") spOperarios->setValue(val);
+    });
+    connect(spDiasDieta, QOverload<int>::of(&QSpinBox::valueChanged), this, [=](int val){
+        if (cbDietasYes->currentText() == "Si") spDias->setValue(val);
+    });
+
+    // --- Inicializar estado correcto ---
+    syncGeneralFromDietas();
+
 
     // ---------------------- Lógica Elevador ----------------------
     connect(cbElevador, &QComboBox::currentTextChanged, this, [=](const QString &elevador){
@@ -316,8 +343,6 @@ void MainWindow::setupUi()
 
     // --- Añadir el grupo al form layout ---
     formLayout->addRow(materialsGroup);
-
-
 
     // ---------------------- Botones ----------------------
     btnCalc = new QPushButton("Calcular");

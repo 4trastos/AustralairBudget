@@ -64,7 +64,7 @@ private:
     // --- Widgets----
     QLineEdit *leClientName, *leCompany, *leContact, *leAddress, *lePhone, *leEmail, *leCIF, *leNumPresu, *leLocalidadObra, *leFecha, *leExtra;
     QDoubleSpinBox *sbMetros, *sbKM, *sbHoras, *sbLitros, *sbElevPortes;
-    QSpinBox *spDietas, *spDias, *spDiasDieta, *spElevDia;
+    QSpinBox *spDietas, *spDias, *spDiasDieta, *spElevDia, *spOperarios;
     QComboBox *cbTipoLocal, *cbTipoCubierta, *cbZona, *cbDietasNo, *cbDietasYes, *cbMaterials, *cbElevador;
     QTableWidget *twMaterials;
     QPushButton *btnAddMat, *btnRemoveMat, *btnCalc, *btnSave, *btnPDF, *btnPrint, *btnDelFields, *btnToggleStatus, *btnNewBudget, *btnStart;
