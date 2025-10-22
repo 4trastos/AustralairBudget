@@ -315,8 +315,37 @@ void MainWindow::setupUi()
     btnsLayout2->addWidget(btnClearFields);
     btnsLayout2->addWidget(btnCloseProject);
 
+    // --- Buscador de clientes con botón de limpiar ---
+    auto *searchLayout = new QHBoxLayout;
+    QLineEdit *leSearchClient = new QLineEdit;
+    leSearchClient->setPlaceholderText("Buscar cliente...");
+
+    QPushButton *btnClearSearch = new QPushButton("✕");
+    btnClearSearch->setToolTip("Limpiar búsqueda");
+    btnClearSearch->setFixedSize(24, 24);
+
+    // Conexión para filtrar dinámicamente
+    connect(leSearchClient, &QLineEdit::textChanged, this, [this](const QString &text) {
+        for (int i = 0; i < lwBudgets->count(); ++i) {
+            QListWidgetItem *item = lwBudgets->item(i);
+            item->setHidden(!item->text().contains(text, Qt::CaseInsensitive));
+        }
+    });
+
+    // Conexión del botón para limpiar
+    connect(btnClearSearch, &QPushButton::clicked, leSearchClient, &QLineEdit::clear);
+
+    // Añadimos los widgets al layout
+    searchLayout->addWidget(leSearchClient);
+    searchLayout->addWidget(btnClearSearch);
+
+    // Agregamos a la columna derecha
     rightV->addWidget(new QLabel("Presupuestos guardados"));
+    rightV->addLayout(searchLayout);
     rightV->addWidget(lwBudgets);
+
+    // rightV->addWidget(new QLabel("Presupuestos guardados"));
+    // rightV->addWidget(lwBudgets);
     rightV->addLayout(btnsLayout1);
     rightV->addLayout(btnsLayout2);
 
@@ -329,17 +358,6 @@ void MainWindow::setupUi()
     setWindowTitle("Australair - Gestor de presupuestos");
 
     // ---------------------- Cargar presupuestos guardados ----------------------
-    /* QSqlQuery q(Database::instance());
-    q.exec("SELECT id, created_at, status FROM budgets ORDER BY created_at DESC");
-    while (q.next()) {
-        int id = q.value(0).toInt();
-        QString ts = q.value(1).toString();
-        QString st = q.value(2).toString();
-        QString label = QString("%1 - %2  (%3)").arg(id).arg(ts).arg(st.toUpper());
-        auto *it = new QListWidgetItem(label);
-        it->setData(Qt::UserRole, id);
-        lwBudgets->addItem(it);
-    } */
     QSqlQuery q(Database::instance());
     q.exec(R"(
         SELECT b.id, c.name, b.created_at, b.status
