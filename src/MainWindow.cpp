@@ -265,8 +265,11 @@ void MainWindow::setupUi()
     auto *materialsLayout = new QVBoxLayout(materialsGroup);
 
     // --- Tabla de materiales ---
-    twMaterials = new QTableWidget(0, 4);
-    twMaterials->setHorizontalHeaderLabels({"Nombre", "Cantidad", "Precio unit.", "Total"});
+    // twMaterials = new QTableWidget(0, 4);
+    // twMaterials->setHorizontalHeaderLabels({"Nombre", "Cantidad", "Precio unit.", "Total"});
+    // twMaterials->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    twMaterials = new QTableWidget(0, 5);
+    twMaterials->setHorizontalHeaderLabels({"Nombre", "Cantidad", "Precio Venta", "Precio Compra", "Total Venta"});
     twMaterials->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     materialsLayout->addWidget(twMaterials);
 
@@ -290,7 +293,7 @@ void MainWindow::setupUi()
 
     materialsLayout->setContentsMargins(10,10,10,10);
 
-    // --- Conexiones ---
+    /* // --- Conexiones ---
     connect(btnAddMat, &QPushButton::clicked, this, [this]() {
         QString materialName = cbMaterials->currentText();
         double unitPrice = 0.0;
@@ -317,6 +320,47 @@ void MainWindow::setupUi()
         twMaterials->setItem(row, 1, new QTableWidgetItem("1"));
         twMaterials->setItem(row, 2, new QTableWidgetItem(QString::number(unitPrice,'f',2)));
         twMaterials->setItem(row, 3, new QTableWidgetItem(QString::number(unitPrice,'f',2)));
+    }); */
+    // --- Conexiones ---
+    // --- Conexiones CON COLUMNAS SEPARADAS ---
+    connect(btnAddMat, &QPushButton::clicked, this, [this]() {
+        QString materialName = cbMaterials->currentText();
+        double sellPrice = 0.0;
+        double costPrice = 0.0;
+
+        if (materialName == "Añadir material") {
+            bool ok;
+            materialName = QInputDialog::getText(this, "Nuevo material", "Nombre del material:", QLineEdit::Normal, "", &ok);
+            if (!ok || materialName.isEmpty()) return;
+
+            sellPrice = QInputDialog::getDouble(this, "Nuevo material", "Precio de VENTA al cliente:", 0.0, 0, 1e6, 2, &ok);
+            if (!ok) return;
+            
+            costPrice = QInputDialog::getDouble(this, "Nuevo material", "Precio de COMPRA (costo real):", sellPrice * 0.7, 0, 1e6, 2, &ok);
+            if (!ok) return;
+
+            materialsMap[materialName] = qMakePair(sellPrice, costPrice);
+            cbMaterials->insertItem(cbMaterials->count()-1, materialName);
+        } else {
+            sellPrice = materialsMap.value(materialName).first;
+            costPrice = materialsMap.value(materialName).second;
+        }
+
+        // Insertar fila con COLUMNAS SEPARADAS
+        int row = twMaterials->rowCount();
+        twMaterials->insertRow(row);
+        twMaterials->setItem(row, 0, new QTableWidgetItem(materialName));
+        twMaterials->setItem(row, 1, new QTableWidgetItem("1"));
+        twMaterials->setItem(row, 2, new QTableWidgetItem(QString::number(sellPrice, 'f', 2)));
+        twMaterials->setItem(row, 3, new QTableWidgetItem(QString::number(costPrice, 'f', 2)));
+        twMaterials->setItem(row, 4, new QTableWidgetItem(QString::number(sellPrice, 'f', 2)));
+    });
+
+    connect(twMaterials, &QTableWidget::cellChanged, this, [this](int row, int column) {
+        // Solo nos interesa cuando cambia la columna de Cantidad (columna 1)
+        if (column == 1) {
+            updateMaterialTotal(row);
+        }
     });
 
     // Configurar selección de filas completas (una sola vez)
@@ -356,6 +400,12 @@ void MainWindow::setupUi()
     lblTotalNoIVA = new QLabel("0.00 €");
     QLabel *lbl2 = new QLabel("Total con IVA (21%):");
     lblTotalConIVA = new QLabel("0.00 €");
+
+    // --- Cálculo Beneficios ---------------------------------   BLOQUE NUEVO ****************
+    QLabel *lbl3 = new QLabel("Costo estimado:");       // NUEVO
+    lblCostoEstimado = new QLabel("0.00 €");            // NUEVO
+    QLabel *lbl4 = new QLabel("Beneficio estimado:");   // NUEVO
+    lblBeneficioEstimado = new QLabel("0.00 €");        // NUEVO
 
     // ---------------------- Conexiones ----------------------
     connect(btnCalc, &QPushButton::clicked, this, &MainWindow::onCalculate);
@@ -406,6 +456,12 @@ void MainWindow::setupUi()
     totalsLayout->addWidget(lblTotalNoIVA, 0, 1, Qt::AlignLeft);
     totalsLayout->addWidget(lbl2, 1, 0, Qt::AlignRight);
     totalsLayout->addWidget(lblTotalConIVA, 1, 1, Qt::AlignLeft);
+
+    totalsLayout->addWidget(lbl3, 2, 0, Qt::AlignRight);                        // NUEVO
+    totalsLayout->addWidget(lblCostoEstimado, 2, 1, Qt::AlignLeft);             // NUEVO
+    totalsLayout->addWidget(lbl4, 3, 0, Qt::AlignRight);                        // NUEVO
+    totalsLayout->addWidget(lblBeneficioEstimado, 3, 1, Qt::AlignLeft);         // NUEVO
+
     totalsLayout->setContentsMargins(10, 10, 10, 10);
 
     // ---------------------- Layout principal (izquierda) ----------------------

@@ -51,10 +51,15 @@ private:
     void loadSettings();
     double getSettingDouble(const QString &key, double def=0.0);
     QString generateBudgetHtml(int id);
-    QMap<QString, double> loadMaterialsFromFile(const QString &filename);
+    //QMap<QString, double> loadMaterialsFromFile(const QString &filename);    <--- ANTERIOR
+    QMap<QString, QPair<double, double>> loadMaterialsFromFile(const QString &filename); // NUEVA
     QMap<QString, double> loadPricesFromFile(const QString &filename);
-    QMap<QString, double> materialsMap;
+    //QMap<QString, double> materialsMap;     <----- ANTERIOR 
+    QMap<QString, QPair<double, double>> materialsMap;  // NUEVO
     void onMaterialChanged(QTableWidgetItem *item);
+    void calculateCostsAndBenefits(double &totalSelling, double &totalCost, double &estimatedBenefit);  // NUEVA
+    void createSampleMaterialsFile(const QString &filename);                    // NUEVA
+    void updateMaterialTotal(int row);      // NUEVA
 
 
     // --- Variables de estado ----
@@ -76,6 +81,7 @@ private:
     QLabel *lblTotalNoIVA_Abierta, *lblTotalConIVA_Abierta;
     QLabel *lblTotalNoIVA_Cerrada, *lblTotalConIVA_Cerrada;
     QLabel *lblCosteEmpresa, *lblBeneficio;
+    QLabel *lblCostoEstimado, *lblBeneficioEstimado;        // NUEVO
 };
 
 #endif

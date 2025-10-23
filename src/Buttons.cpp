@@ -103,6 +103,8 @@ void MainWindow::onDeleteFields() {
     // --- Labels de totales ---
     if (lblTotalNoIVA) lblTotalNoIVA->setText("0.00 €");
     if (lblTotalConIVA) lblTotalConIVA->setText("0.00 €");
+    if (lblCostoEstimado) lblCostoEstimado->setText("0.00 €");
+    if (lblBeneficioEstimado) lblBeneficioEstimado->setText("0.00 €");
 
     // --- Estado interno ---
     currentBudgetId = 0;

@@ -1,10 +1,18 @@
-TBS;2500.00
-Coolair;1800.00
-CW3;4200.23
-Conductos;200.00
-Fontanería;500.00
-Electricidad;350.00
-Magiq-touch;680.00
-Tornillos;0.45
-Remaches;0.90
-Pasarela;70.00
+TBS;2500.00;190.23
+Coolair;1800.00;1100.00
+CW3;4200.23;2500.00
+Conductos;200.00;78.12
+Fontanería;500.00;225.23;
+Electricidad;350.00;323.12
+Magiq-touch;680.00;430.21
+Remaches;0.90;0.12
+Pasarela;70.00;56.12
+Tornillo M8;0.15;0.08
+Poliuretano;12.50;8.75
+Silicona;4.50;3.20
+Lana mineral;8.00;5.60
+Pintura;25.00;18.00
+Cinta aluminio;3.50;2.45
+Brida plástico;0.80;0.56
+Tubo PVC;2.30;1.61
+Fijación techo;1.20;0.84

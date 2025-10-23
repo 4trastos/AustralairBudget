@@ -70,6 +70,7 @@ void Database::ensureSchema() {
       name TEXT,
       quantity REAL,
       unit_price REAL,
+      cost_price REAL,
       FOREIGN KEY(budget_id) REFERENCES budgets(id)
     ))");
     q.exec(R"(
@@ -88,7 +89,7 @@ void Database::ensureSchema() {
     real_benefit REAL,
     FOREIGN KEY(budget_id) REFERENCES budgets(id)
     ))");
-    
+
     // defaults: price_base=10, increment_per_field=5, iva=21
     q.prepare("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)");
     q.addBindValue("price_base"); q.addBindValue("10"); q.exec();

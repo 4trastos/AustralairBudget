@@ -22,7 +22,7 @@ QMap<QString, double> MainWindow::loadPricesFromFile(const QString &filename)
     return prices;
 }
 
-QMap<QString, double> MainWindow::loadMaterialsFromFile(const QString &filename)
+/* QMap<QString, double> MainWindow::loadMaterialsFromFile(const QString &filename)
 {
     QMap<QString, double> materials;
     QFile file(filename);
@@ -44,6 +44,48 @@ QMap<QString, double> MainWindow::loadMaterialsFromFile(const QString &filename)
         materials[name] = price;
     }
     qDebug() << "Materiales cargados:" << materials;
+    return materials;
+} */
+
+QMap<QString, QPair<double, double>> MainWindow::loadMaterialsFromFile(const QString &filename)
+{
+    QMap<QString, QPair<double, double>> materials;
+    QFile file(filename);
+    qDebug() << "Intentando abrir:" << filename;
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "No se pudo abrir el archivo de materiales.";
+        // Crear archivo de ejemplo si no existe
+        createSampleMaterialsFile(filename);
+        return materials;
+    }
+
+    QTextStream in(&file);
+    int lineCount = 0;
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+        lineCount++;
+        if (line.isEmpty() || line.startsWith("#")) continue;
+        
+        QStringList parts = line.split(';');
+        if (parts.size() == 2) {
+            // Formato antiguo: Nombre;PrecioVenta
+            QString name = parts[0].trimmed();
+            double sellPrice = parts[1].toDouble();
+            materials[name] = qMakePair(sellPrice, sellPrice * 0.7); // Precio compra = 70% de venta
+        } else if (parts.size() == 3) {
+            // Formato nuevo: Nombre;PrecioVenta;PrecioCompra
+            QString name = parts[0].trimmed();
+            double sellPrice = parts[1].toDouble();
+            double costPrice = parts[2].toDouble();
+            materials[name] = qMakePair(sellPrice, costPrice);
+        } else {
+            qWarning() << "Formato inválido en línea" << lineCount << ":" << line;
+        }
+    }
+    
+    qDebug() << "Materiales cargados:" << materials.size() << "elementos";
+    file.close();
     return materials;
 }
 
@@ -77,4 +119,27 @@ void MainWindow::setNextBudgetNumberAndDate()
 
     QString fechaHoy = QDate::currentDate().toString("dd/MM/yyyy");
     leFecha->setText(fechaHoy);
+}
+
+
+void MainWindow::createSampleMaterialsFile(const QString &filename)
+{
+    QFile file(filename);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&file);
+        out << "# Archivo de materiales - Formato: Nombre;PrecioVenta;PrecioCompra\n";
+        out << "# También soporta formato antiguo: Nombre;PrecioVenta\n";
+        out << "Tornillo M8;0.15;0.08\n";
+        out << "Panel sandwich;45.00;32.50\n";
+        out << "Poliuretano;12.50;8.75\n";
+        out << "Silicona;4.50;3.20\n";
+        out << "Lana mineral;8.00;5.60\n";
+        out << "Pintura;25.00;18.00\n";
+        out << "Cinta aluminio;3.50;2.45\n";
+        out << "Brida plástico;0.80;0.56\n";
+        out << "Tubo PVC;2.30;1.61\n";
+        out << "Fijación techo;1.20;0.84\n";
+        file.close();
+        qDebug() << "Archivo de materiales de ejemplo creado:" << filename;
+    }
 }

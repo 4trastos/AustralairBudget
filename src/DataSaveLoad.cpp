@@ -72,17 +72,19 @@ void MainWindow::onSaveBudget()
 
     // --- Guardar materiales ---
     QSqlQuery qm(d);
-    qm.prepare("INSERT INTO materials(budget_id,name,quantity,unit_price) VALUES(?,?,?,?)");
+    qm.prepare("INSERT INTO materials(budget_id,name,quantity,unit_price,cost_price) VALUES(?,?,?,?,?)");
 
     for (int r = 0; r < twMaterials->rowCount(); ++r) {
         QString name = twMaterials->item(r, 0)->text();
         double qty = twMaterials->item(r, 1)->text().toDouble();
-        double up  = twMaterials->item(r, 2)->text().toDouble();
+        double up  = twMaterials->item(r, 2)->text().toDouble();  // Precio venta
+        double cost = twMaterials->item(r, 3)->text().toDouble(); // Precio compra (columna 3)
 
         qm.addBindValue(budgetId);
         qm.addBindValue(name);
         qm.addBindValue(qty);
         qm.addBindValue(up);
+        qm.addBindValue(cost);
 
         if (!qm.exec())
             qDebug() << "Error saving material:" << qm.lastError().text();
@@ -191,7 +193,7 @@ void MainWindow::onLoadSelectedBudget()
     // 4️⃣ Cargar materiales
     twMaterials->setRowCount(0);
     QSqlQuery materialsQuery(Database::instance());
-    materialsQuery.prepare("SELECT name, quantity, unit_price FROM materials WHERE budget_id = ?");
+    materialsQuery.prepare("SELECT name, quantity, unit_price, cost_price FROM materials WHERE budget_id = ?");
     materialsQuery.addBindValue(budgetId);
     if (materialsQuery.exec()) {
         int rowCount = 0;
@@ -201,17 +203,20 @@ void MainWindow::onLoadSelectedBudget()
 
             QString name = materialsQuery.value(0).toString();
             double qty  = materialsQuery.value(1).toDouble();
-            double price = materialsQuery.value(2).toDouble();
-            double total = qty * price;
+            double sellPrice = materialsQuery.value(2).toDouble();  // Precio venta
+            double costPrice = materialsQuery.value(3).toDouble();  // Precio compra
+            double total = qty * sellPrice;
 
             twMaterials->setItem(r, 0, new QTableWidgetItem(name));
             twMaterials->setItem(r, 1, new QTableWidgetItem(QString::number(qty, 'f', 2)));
-            twMaterials->setItem(r, 2, new QTableWidgetItem(QString::number(price, 'f', 2)));
-            twMaterials->setItem(r, 3, new QTableWidgetItem(QString::number(total, 'f', 2)));
+            twMaterials->setItem(r, 2, new QTableWidgetItem(QString::number(sellPrice, 'f', 2)));
+            twMaterials->setItem(r, 3, new QTableWidgetItem(QString::number(costPrice, 'f', 2)));  // Precio compra
+            twMaterials->setItem(r, 4, new QTableWidgetItem(QString::number(total, 'f', 2)));      // Total venta
             rowCount++;
         }
         qDebug() << "Materiales cargados:" << rowCount << "filas";
-    } else {
+    }
+    else {
         qWarning() << "No se pudieron cargar materiales para presupuesto ID" << budgetId
                    << "Error:" << materialsQuery.lastError().text();
     }
