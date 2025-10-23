@@ -71,9 +71,12 @@ void MainWindow::onDeleteFields() {
     sbKM->setValue(0);
     sbLitros->setValue(0);
     sbHoras->setValue(0);
+    sbElevPortes->setValue(0);
     spDietas->setValue(0);
     spDiasDieta->setValue(0);
     spDias->setValue(0);
+    spElevDia->setValue(0);
+    spOperarios->setValue(0);
     leLocalidadObra->clear();
 
     // --- ComboBoxes ---
@@ -81,9 +84,15 @@ void MainWindow::onDeleteFields() {
     cbTipoCubierta->setCurrentIndex(0);
     cbZona->setCurrentIndex(0);
     cbElevador->setCurrentIndex(0);
+    cbDietasYes->setCurrentIndex(0);
 
-    // --- RadioButtons dietas ---
-    //if (rbDietasNo) rbDietasNo->setChecked(true);  // resetea a "No"
+    // --- RadioButtons Zonas ---
+    rbCorta->setChecked(false);
+    rbMedia->setChecked(false);
+    rbLarga->setChecked(false);
+    // rbCorta->setEnabled(false);
+    // rbMedia->setEnabled(false);
+    // rbLarga->setEnabled(false);
 
     // --- Tabla materiales ---
     if (twMaterials) {

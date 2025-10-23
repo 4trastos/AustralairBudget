@@ -1,0 +1,10 @@
+TBS;2500.00;1230.23
+Coolair;1800.00;985.23
+CW3;4200.23;2340.00
+Conductos;200.00;98.23
+Fontanería;500.00;232.32
+Electricidad;350.00;143.23
+Magiq-touch;680.00;450.00
+Tornillos;0.45;0.15
+Remaches;0.90;0.25
+Pasarela;70.00;50.00

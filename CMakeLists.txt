@@ -18,6 +18,8 @@ set(SRC
     src/StatusWork.cpp
     src/Fuel.cpp
     src/Load.cpp
+    src/DataSaveLoad.cpp
+    src/Calculator.cpp
 )
 
 set(HDR

@@ -1,11 +1,10 @@
-TBS;2500
-Coolair;1800
-CW3;4200
-Conductos;200
-Fontanería;500
-Electricidad;350
-Magiq-touch;680
-Plataforma Elevadora;340
-Tornillos;0.15
-Remaches;0.10
-Pasarela;70
+TBS;2500.00
+Coolair;1800.00
+CW3;4200.23
+Conductos;200.00
+Fontanería;500.00
+Electricidad;350.00
+Magiq-touch;680.00
+Tornillos;0.45
+Remaches;0.90
+Pasarela;70.00

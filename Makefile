@@ -13,7 +13,9 @@ SOURCES = $(SRC_DIR)/main.cpp \
           $(SRC_DIR)/ExportPdf.cpp \
           $(SRC_DIR)/StatusWork.cpp \
           $(SRC_DIR)/Fuel.cpp \
-          $(SRC_DIR)/Load.cpp
+          $(SRC_DIR)/Load.cpp \
+          $(SRC_DIR)/DataSaveLoad.cpp \
+          $(SRC_DIR)/Calculator.cpp
 
 HEADERS = $(LIB_DIR)/MainWindow.hpp \
           $(LIB_DIR)/Database.hpp \
