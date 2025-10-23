@@ -77,6 +77,18 @@ void Database::ensureSchema() {
       key TEXT PRIMARY KEY,
       value TEXT
     ))");
+
+    q.exec(R"(
+      CREATE TABLE IF NOT EXISTS actual_costs (
+    budget_id INTEGER,
+    real_hours REAL,
+    real_km REAL,
+    real_fuel REAL,
+    real_materials_cost REAL,
+    real_benefit REAL,
+    FOREIGN KEY(budget_id) REFERENCES budgets(id)
+    ))");
+    
     // defaults: price_base=10, increment_per_field=5, iva=21
     q.prepare("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)");
     q.addBindValue("price_base"); q.addBindValue("10"); q.exec();
