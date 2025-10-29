@@ -2,7 +2,7 @@ TBS;2500.00;190.23
 Coolair;1800.00;1100.00
 CW3;4200.23;2500.00
 Conductos;200.00;78.12
-Fontanería;500.00;225.23;
+Fontanería;500.00;225.23
 Electricidad;350.00;323.12
 Magiq-touch;680.00;430.21
 Remaches;0.90;0.12

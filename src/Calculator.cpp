@@ -97,7 +97,7 @@ void MainWindow::onCalculate()
     total += litrosConsumidos * fuelPrice;
 
     // --- Dietas ---
-    double dietaPrice = prices.value("dieta", 300);
+    double dietaPrice = prices.value("dieta", 150);
     total += spDietas->value() * spDiasDieta->value() * dietaPrice;
 
     // --- Horas de trabajo CON INCREMENTOS POR DISTANCIA ---
@@ -185,3 +185,7 @@ void MainWindow::updateMaterialTotal(int row) {
     // Recalcular totales
     onCalculate();
 }
+
+
+
+*ho0sJ8!o)@*H3Oqb!8P7mwI
