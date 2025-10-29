@@ -1,6 +1,7 @@
 #include "AustralairBudget.hpp"
 #include "Database.hpp"
 #include "MainWindow.hpp"
+#include "MaterialsWindow.hpp"
 
 void MainWindow::onSaveBudget()
 {
@@ -37,28 +38,32 @@ void MainWindow::onSaveBudget()
     QSqlQuery qb(d);
     qb.prepare(R"(
         INSERT INTO budgets(
-            client_id, tipo_local, metros, tipo_cubierta, elevador, portes, dias_elevador, 
-            zona, dietas, dias_dieta, localidad, km, combustible, operarios, dias_trabajo, 
-            horas, base_price, total_no_iva, total_con_iva
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            client_id, tipo_local, metros, tipo_cubierta, extraccion, elevador, portes, dias_elevador, 
+            precio_dia, zona, dietas, dias_dieta, ,precio_dieta, localidad, km, combustible, operarios, dias_trabajo, 
+            horas, horas_viaje, base_price, total_no_iva, total_con_iva
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     )");
 
     qb.addBindValue(clientId);                        // client_id
     qb.addBindValue(cbTipoLocal->currentText());     // tipo_local
     qb.addBindValue(sbMetros->value());              // metros
     qb.addBindValue(cbTipoCubierta->currentText());  // tipo_cubierta
+    qb.addBindValue(cbExtractor->currentText());     // Extracción
     qb.addBindValue(cbElevador->currentText());      // elevador
     qb.addBindValue(sbElevPortes->value());          // portes
     qb.addBindValue(spElevDia->value());             // dias_elevador
+    qb.addBindValue(spElevPrecDia->value());         // Precio por día
     qb.addBindValue(cbZona->currentText());          // zona
     qb.addBindValue(spDietas->value());             // dietas
     qb.addBindValue(spDiasDieta->value());          // dias_dieta
+    qb.addBindValue(spPrecioDiet->value());         // Precio dieta X día
     qb.addBindValue(leLocalidadObra ? leLocalidadObra->text() : QString()); // localidad
     qb.addBindValue(sbKM->value());                  // km
     qb.addBindValue(sbLitros->value());             // combustible
     qb.addBindValue(spOperarios->value());          // operarios
     qb.addBindValue(spDias->value());               // dias_trabajo
     qb.addBindValue(sbHoras->value());              // horas
+    qb.addBindValue(sbHorasViaje->value());         // Horas viaje
     qb.addBindValue(base);                           // base_price
     qb.addBindValue(totalNoIva);                     // total_no_iva
     qb.addBindValue(totalConIva);                   // total_con_iva
@@ -126,9 +131,9 @@ void MainWindow::onLoadSelectedBudget()
 
     // 2️⃣ Cargar datos del presupuesto - CONSULTA CORREGIDA
     QSqlQuery query(Database::instance());
-    query.prepare("SELECT client_id, tipo_local, metros, tipo_cubierta, elevador, portes, "
-                  "dias_elevador, zona, dietas, dias_dieta, localidad, km, combustible, "
-                  "operarios, dias_trabajo, horas, base_price, total_no_iva, total_con_iva "
+    query.prepare("SELECT client_id, tipo_local, metros, tipo_cubierta, extraccion, elevador, portes, "
+                  "dias_elevador, precio_dia, zona, dietas, dias_dieta, precio_dieta, localidad, km, combustible, "
+                  "operarios, dias_trabajo, horas, horas_viaje, base_price, total_no_iva, total_con_iva "
                   "FROM budgets WHERE id = ?");
     query.addBindValue(budgetId);
 
@@ -149,27 +154,31 @@ void MainWindow::onLoadSelectedBudget()
     cbTipoLocal->setCurrentText(query.value(1).toString());
     sbMetros->setValue(query.value(2).toDouble());
     cbTipoCubierta->setCurrentText(query.value(3).toString());
-    cbElevador->setCurrentText(query.value(4).toString());
-    sbElevPortes->setValue(query.value(5).toDouble());
-    spElevDia->setValue(query.value(6).toInt());
-    cbZona->setCurrentText(query.value(7).toString());
-    spDietas->setValue(query.value(8).toInt());
-    spDiasDieta->setValue(query.value(9).toInt());
+    cbExtractor->setCurrentText(query.value(4).toString());
+    cbElevador->setCurrentText(query.value(5).toString());
+    sbElevPortes->setValue(query.value(6).toDouble());
+    spElevDia->setValue(query.value(7).toInt());
+    spElevPrecDia->setValue(query.value(8).toInt());
+    cbZona->setCurrentText(query.value(9).toString());
+    spDietas->setValue(query.value(10).toInt());
+    spDiasDieta->setValue(query.value(11).toInt());
+    spPrecioDiet->setValue(query.value(12).toInt());
     
     // Localidad
     QLineEdit *leLocalidad = findChild<QLineEdit*>("leLocalidadObra");
     if (leLocalidad) 
-        leLocalidad->setText(query.value(10).toString());
+        leLocalidad->setText(query.value(13).toString());
     
-    sbKM->setValue(query.value(11).toDouble());
-    sbLitros->setValue(query.value(12).toDouble());
-    spOperarios->setValue(query.value(13).toInt());
-    spDias->setValue(query.value(14).toInt());
-    sbHoras->setValue(query.value(15).toDouble());
+    sbKM->setValue(query.value(14).toDouble());
+    sbLitros->setValue(query.value(15).toDouble());
+    spOperarios->setValue(query.value(16).toInt());
+    spDias->setValue(query.value(17).toInt());
+    sbHoras->setValue(query.value(17).toDouble());
+    sbHorasViaje->setValue(query.value(19).toDouble());
 
     qDebug() << "Presupuesto cargado - Client ID:" << clientId 
-             << "Operarios:" << query.value(13).toInt()
-             << "Días:" << query.value(14).toInt();
+             << "Operarios:" << query.value(21).toInt()
+             << "Días:" << query.value(22).toInt();
 
     // 3️⃣ Cargar datos del cliente
     QSqlQuery clientQuery(Database::instance());

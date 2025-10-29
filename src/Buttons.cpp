@@ -1,6 +1,7 @@
 #include "AustralairBudget.hpp"
 #include "Database.hpp"
 #include "MainWindow.hpp"
+#include "MaterialsWindow.hpp"
 
 void MainWindow::onBackToStart() {
     AustralairBudget *start = new AustralairBudget;
@@ -90,9 +91,6 @@ void MainWindow::onDeleteFields() {
     rbCorta->setChecked(false);
     rbMedia->setChecked(false);
     rbLarga->setChecked(false);
-    // rbCorta->setEnabled(false);
-    // rbMedia->setEnabled(false);
-    // rbLarga->setEnabled(false);
 
     // --- Tabla materiales ---
     if (twMaterials) {

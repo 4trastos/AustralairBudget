@@ -1,6 +1,7 @@
 #include "AustralairBudget.hpp"
 #include "Database.hpp"
 #include "MainWindow.hpp"
+#include "MaterialsWindow.hpp"
 
 // --- Slot para Imprimir Presupuesto ---
 

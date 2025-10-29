@@ -1,6 +1,7 @@
 #include "AustralairBudget.hpp"
 #include "Database.hpp"
 #include "MainWindow.hpp"
+#include "MaterialsWindow.hpp"
 
 void MainWindow::updateDistanceAndFuel() {
     // Constante: consumo de las furgonetas (litros cada 100 km)

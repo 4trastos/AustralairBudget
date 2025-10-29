@@ -1,6 +1,7 @@
 #include "AustralairBudget.hpp"
 #include "Database.hpp"
 #include "MainWindow.hpp"
+#include "MaterialsWindow.hpp"
 
 QMap<QString, double> MainWindow::loadPricesFromFile(const QString &filename)
 {
@@ -21,31 +22,6 @@ QMap<QString, double> MainWindow::loadPricesFromFile(const QString &filename)
     }
     return prices;
 }
-
-/* QMap<QString, double> MainWindow::loadMaterialsFromFile(const QString &filename)
-{
-    QMap<QString, double> materials;
-    QFile file(filename);
-    qDebug() << "Intentando abrir:" << filename;
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning() << "No se pudo abrir el archivo de materiales.";
-        return materials;
-    }
-
-    QTextStream in(&file);
-    while (!in.atEnd()) {
-        QString line = in.readLine().trimmed();
-        if (line.isEmpty()) continue;
-        QStringList parts = line.split(';');
-        if (parts.size() != 2) continue;
-        QString name = parts[0].trimmed();
-        double price = parts[1].toDouble();
-        materials[name] = price;
-    }
-    qDebug() << "Materiales cargados:" << materials;
-    return materials;
-} */
 
 QMap<QString, QPair<double, double>> MainWindow::loadMaterialsFromFile(const QString &filename)
 {

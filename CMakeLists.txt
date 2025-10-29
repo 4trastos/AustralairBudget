@@ -20,12 +20,14 @@ set(SRC
     src/Load.cpp
     src/DataSaveLoad.cpp
     src/Calculator.cpp
+    src/MaterialsWindow.cpp
 )
 
 set(HDR
     incl/MainWindow.hpp
     incl/Database.hpp
     incl/AustralairBudget.hpp
+    incl/MaterialsWindow.hpp
 )
 
 # Ejecutable

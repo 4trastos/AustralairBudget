@@ -15,11 +15,13 @@ SOURCES = $(SRC_DIR)/main.cpp \
           $(SRC_DIR)/Fuel.cpp \
           $(SRC_DIR)/Load.cpp \
           $(SRC_DIR)/DataSaveLoad.cpp \
-          $(SRC_DIR)/Calculator.cpp
+          $(SRC_DIR)/Calculator.cpp \
+          $(SRC_DIR)/MaterialsWindow.cpp
 
 HEADERS = $(LIB_DIR)/MainWindow.hpp \
           $(LIB_DIR)/Database.hpp \
-          $(LIB_DIR)/AustralairBudget.hpp
+          $(LIB_DIR)/AustralairBudget.hpp \
+          $(LIB_DIR)/MaterialsWindow.hpp
 
 # --- Variables de Qt y Herramientas ---
 QT_VER ?= 6
@@ -55,7 +57,8 @@ LIBS = \
 # --- Archivos generados ---
 OBJECTS_SOURCES = $(SOURCES:.cpp=.o)
 MOC_SOURCES = $(LIB_DIR)/MainWindow_moc.cpp \
-              $(LIB_DIR)/AustralairBudget_moc.cpp
+              $(LIB_DIR)/AustralairBudget_moc.cpp \
+              $(LIB_DIR)/MaterialsWindow_moc.cpp
 OBJECTS_MOC = $(MOC_SOURCES:.cpp=.o)
 RCC_SOURCES = $(RESOURCES:.qrc=_qrc.cpp)
 OBJECTS_RCC = $(RCC_SOURCES:.cpp=.o)
@@ -82,6 +85,10 @@ $(LIB_DIR)/MainWindow_moc.cpp: $(LIB_DIR)/MainWindow.hpp
 	$(MOC) $< -o $@
 
 $(LIB_DIR)/AustralairBudget_moc.cpp: $(LIB_DIR)/AustralairBudget.hpp
+	@echo "⚙️ Generando MOC para $<..."
+	$(MOC) $< -o $@
+
+$(LIB_DIR)/MaterialsWindow_moc.cpp: $(LIB_DIR)/MaterialsWindow.hpp
 	@echo "⚙️ Generando MOC para $<..."
 	$(MOC) $< -o $@
 

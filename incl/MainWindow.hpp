@@ -8,6 +8,7 @@
 # include <QApplication>
 # include <QtPrintSupport/QPrinter>
 # include <QtPrintSupport/QPrintDialog>
+# include "MaterialsWindow.hpp"
 # include <QtPrintSupport/QPrintPreviewDialog>
 
 QT_BEGIN_NAMESPACE
@@ -18,6 +19,7 @@ class QTextEdit;
 class QDoubleSpinBox;
 class QTableWidget;
 class QPushButton;
+class QListWidget;
 class QListWidget;
 QT_END_NAMESPACE
 
@@ -45,16 +47,15 @@ private slots:
     void updateDistanceAndFuel();
     void updateDietasStatus();
     void setNextBudgetNumberAndDate();
+    void onOpenMaterialsWindow();
 
 private:
     void setupUi();
     void loadSettings();
     double getSettingDouble(const QString &key, double def=0.0);
     QString generateBudgetHtml(int id);
-    //QMap<QString, double> loadMaterialsFromFile(const QString &filename);    <--- ANTERIOR
     QMap<QString, QPair<double, double>> loadMaterialsFromFile(const QString &filename); // NUEVA
     QMap<QString, double> loadPricesFromFile(const QString &filename);
-    //QMap<QString, double> materialsMap;     <----- ANTERIOR 
     QMap<QString, QPair<double, double>> materialsMap;  // NUEVO
     void onMaterialChanged(QTableWidgetItem *item);
     void calculateCostsAndBenefits(double &totalSelling, double &totalCost, double &estimatedBenefit);  // NUEVA
@@ -68,9 +69,9 @@ private:
     
     // --- Widgets----
     QLineEdit *leClientName, *leCompany, *leContact, *leAddress, *lePhone, *leEmail, *leCIF, *leNumPresu, *leLocalidadObra, *leFecha, *leExtra;
-    QDoubleSpinBox *sbMetros, *sbKM, *sbHoras, *sbLitros, *sbElevPortes;
-    QSpinBox *spDietas, *spDias, *spDiasDieta, *spElevDia, *spOperarios;
-    QComboBox *cbTipoLocal, *cbTipoCubierta, *cbZona, *cbDietasNo, *cbDietasYes, *cbMaterials, *cbElevador;
+    QDoubleSpinBox *sbMetros, *sbKM, *sbHoras, *sbLitros, *sbElevPortes, *sbHorasViaje;
+    QSpinBox *spDietas, *spDias, *spDiasDieta, *spElevDia, *spOperarios, *spElevPrecDia, *spPrecioDiet;
+    QComboBox *cbTipoLocal, *cbTipoCubierta, *cbZona, *cbDietasNo, *cbDietasYes, *cbMaterials, *cbElevador, *cbExtractor;
     QTableWidget *twMaterials;
     QPushButton *btnAddMat, *btnRemoveMat, *btnCalc, *btnSave, *btnPDF, *btnPrint, *btnDelFields, *btnToggleStatus, *btnNewBudget, *btnStart;
     QListWidget *lwBudgets;
