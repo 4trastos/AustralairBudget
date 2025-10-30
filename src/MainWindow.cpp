@@ -98,6 +98,7 @@ void MainWindow::setupUi()
     cbExtractor = new QComboBox; cbExtractor->addItems({"No", "Si"});
     sbHorasViaje = new QDoubleSpinBox; sbHorasViaje->setRange(0,1e5);
     spPrecioDiet = new QSpinBox; spPrecioDiet->setRange(0,1000);
+    spFurgonetas = new QSpinBox; spFurgonetas->setRange(0,100);
 
     // ---- Elevador ----
     cbElevador = new QComboBox; cbElevador->addItems({"No","Si"});
@@ -159,8 +160,10 @@ void MainWindow::setupUi()
     obraZonaLayout->addWidget(spPrecioDiet, 3, 7);
 
     // --- FILA 5: Localidad y Kilometros ---
-    obraZonaLayout->addWidget(new QLabel("Localidad:"), 4, 0);
-    obraZonaLayout->addWidget(leLocalidadObra, 4, 1);
+    //obraZonaLayout->addWidget(new QLabel("Localidad:"), 4, 0);
+    //obraZonaLayout->addWidget(leLocalidadObra, 4, 1);
+    obraZonaLayout->addWidget(new QLabel("Furgonetas:"), 4, 0);
+    obraZonaLayout->addWidget(spFurgonetas, 4, 1);
     obraZonaLayout->addWidget(new QLabel("KM desplazamiento:"), 4, 2);
     obraZonaLayout->addWidget(sbKM, 4, 3);
     obraZonaLayout->addWidget(new QLabel("Combustible:"), 4, 4);

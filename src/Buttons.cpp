@@ -79,6 +79,9 @@ void MainWindow::onDeleteFields() {
     spElevDia->setValue(0);
     spOperarios->setValue(0);
     leLocalidadObra->clear();
+    spElevPrecDia->setValue(0);
+    spPrecioDiet->setValue(0);
+    spFurgonetas->setValue(0);
 
     // --- ComboBoxes ---
     cbTipoLocal->setCurrentIndex(0);
@@ -86,6 +89,7 @@ void MainWindow::onDeleteFields() {
     cbZona->setCurrentIndex(0);
     cbElevador->setCurrentIndex(0);
     cbDietasYes->setCurrentIndex(0);
+    cbExtractor->setCurrentIndex(0);
 
     // --- RadioButtons Zonas ---
     rbCorta->setChecked(false);

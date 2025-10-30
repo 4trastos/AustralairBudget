@@ -52,7 +52,7 @@ void Database::ensureSchema() {
       dietas INTEGER,
       dias_dieta INTEGER,
       precio_dieta INTEGER,
-      localidad TEXT,
+      furgonetas INTEGER,
       km REAL,
       combustible REAL,
       operarios INTEGER,
