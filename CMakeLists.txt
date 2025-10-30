@@ -41,5 +41,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 qt6_add_resources(RESOURCES_RCC resources.qrc)
 target_sources(australair PRIVATE ${RESOURCES_RCC})
 
+target_include_directories(australair PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/incl)
+
 # Librerías
 target_link_libraries(australair PRIVATE Qt6::Widgets Qt6::Sql)
