@@ -17,7 +17,7 @@ class MaterialsWindow : public QDialog
 public:
     // El constructor recibe el puntero a MainWindow para poder comunicar si se añade un nuevo material
     MaterialsWindow(QWidget *parent = nullptr);
-    ~MaterialsWindow();
+    //~MaterialsWindow() = default;
     QList<SelectedMaterial> getSelectedMaterials() const;
 
 private slots:

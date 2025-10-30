@@ -16,10 +16,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     showMaximized();
 }
 
+//MainWindow::~MainWindow(){}
+
 void MainWindow::setupUi()
 {
-    QWidget *w = new QWidget;
-    auto *mainLayout = new QHBoxLayout;
+    QWidget *central = new QWidget(this);
+    auto *mainSplitter = new QSplitter(Qt::Horizontal, central);
+
+    // ==================== COLUMNA IZQUIERDA ====================
+    auto *leftWidget = new QWidget;
+    auto *leftV = new QVBoxLayout(leftWidget);
 
     // ---------------------- Formulario ----------------------
     auto *formLayout = new QFormLayout;
@@ -63,29 +69,17 @@ void MainWindow::setupUi()
     customerLayout->addWidget(new QLabel("Fecha:"), 2, 4);
     customerLayout->addWidget(leFecha, 2, 5);
 
-    // Márgenes proporcionales
     customerLayout->setContentsMargins(10, 10, 10, 10);
     customerLayout->setHorizontalSpacing(12);
     customerLayout->setVerticalSpacing(8);
 
-    // Añadir al layout principal
     formLayout->addRow(customerGroup);
 
     // ---------------------- Bloque Obra ----------------------
-    cbZona = new QComboBox;
-    leLocalidadObra = new QLineEdit; 
-    cbElevador = new QComboBox; cbElevador->addItems({"No","Si"});
-    sbElevPortes = new QDoubleSpinBox; sbElevPortes->setRange(0, 1e6); sbElevPortes->setSuffix(" €");
-    spElevDia = new QSpinBox; spElevDia->setRange(0,1000);
-    spElevPrecDia = new QSpinBox; spElevPrecDia->setRange(0, 3000);
-    cbDietasYes = new QComboBox; cbDietasYes->addItems({"No","Si"});
-    leExtra = new QLineEdit;
-
-    // ---------------------- Bloque Obra completo en marco ----------------------
     auto *obraZonaGroup = new QGroupBox("Datos de la obra");
     auto *obraZonaLayout = new QGridLayout(obraZonaGroup);
 
-    // ---- Campos principales de obra ----
+    // Campos de obra
     sbMetros = new QDoubleSpinBox; sbMetros->setRange(0, 1e6); sbMetros->setSuffix(" m²");
     cbTipoLocal = new QComboBox; cbTipoLocal->addItems({" ··· ","Nave industrial","Local comercial","Vivienda","Complejo Deportivo"});
     cbTipoCubierta = new QComboBox; cbTipoCubierta->addItems({" ··· ","Chapa","Teja","Cubierta plana","Panel sandwich", "Uralita"});
@@ -94,13 +88,12 @@ void MainWindow::setupUi()
     sbHoras = new QDoubleSpinBox; sbHoras->setRange(0,1e5);
     spDias = new QSpinBox; spDias->setRange(0,365);
     leLocalidadObra = new QLineEdit;
-    spOperarios = new QSpinBox;spOperarios->setRange(0,60);
+    spOperarios = new QSpinBox; spOperarios->setRange(0,60);
     cbExtractor = new QComboBox; cbExtractor->addItems({"No", "Si"});
     sbHorasViaje = new QDoubleSpinBox; sbHorasViaje->setRange(0,1e5);
     spPrecioDiet = new QSpinBox; spPrecioDiet->setRange(0,1000);
     spFurgonetas = new QSpinBox; spFurgonetas->setRange(0,100);
 
-    // ---- Elevador ----
     cbElevador = new QComboBox; cbElevador->addItems({"No","Si"});
     sbElevPortes = new QDoubleSpinBox; sbElevPortes->setRange(0, 1e6); sbElevPortes->setSuffix(" €");
     spElevDia = new QSpinBox; spElevDia->setRange(0,1000);
@@ -109,7 +102,6 @@ void MainWindow::setupUi()
     spElevDia->setEnabled(false);
     spElevPrecDia->setEnabled(false);
 
-    // ---- Zona y dietas ----
     cbZona = new QComboBox; 
     cbZona->addItems({"Zona Centro","Otras Zonas"});
     cbDietasYes = new QComboBox; cbDietasYes->addItems({"No","Si"});
@@ -146,7 +138,6 @@ void MainWindow::setupUi()
     obraZonaLayout->addWidget(new QLabel("Zona:"), 2, 0);
     obraZonaLayout->addWidget(cbZona, 2, 1);
     obraZonaLayout->addWidget(rbCorta, 2, 3);
-    //obraZonaLayout->addWidget(rbMedia, 2, 4);
     obraZonaLayout->addWidget(rbLarga, 2, 5);
 
     // --- FILA 4: Dietas otras zonas ---
@@ -159,16 +150,13 @@ void MainWindow::setupUi()
     obraZonaLayout->addWidget(new QLabel("Precio X Día:"), 3, 6);
     obraZonaLayout->addWidget(spPrecioDiet, 3, 7);
 
-    // --- FILA 5: Localidad y Kilometros ---
-    //obraZonaLayout->addWidget(new QLabel("Localidad:"), 4, 0);
-    //obraZonaLayout->addWidget(leLocalidadObra, 4, 1);
+    // --- FILA 5: Furgonetas y combustible ---
     obraZonaLayout->addWidget(new QLabel("Furgonetas:"), 4, 0);
     obraZonaLayout->addWidget(spFurgonetas, 4, 1);
     obraZonaLayout->addWidget(new QLabel("KM desplazamiento:"), 4, 2);
     obraZonaLayout->addWidget(sbKM, 4, 3);
     obraZonaLayout->addWidget(new QLabel("Combustible:"), 4, 4);
     obraZonaLayout->addWidget(sbLitros, 4, 5);
-    //obraZonaLayout->addWidget(new QLineEdit, 4, 3);
 
     // --- FILA 6: Horas y Operarios ---
     obraZonaLayout->addWidget(new QLabel("Nº Operarios:"), 5, 0);
@@ -179,9 +167,7 @@ void MainWindow::setupUi()
     obraZonaLayout->addWidget(sbHoras, 5, 5);
     obraZonaLayout->addWidget(new QLabel("Horas Viaje:"), 5, 6);
     obraZonaLayout->addWidget(sbHorasViaje, 5, 7);
-    leExtra->setEnabled(false);
 
-    // --- Proporciones y márgenes ---
     obraZonaLayout->setColumnStretch(1, 1);
     obraZonaLayout->setColumnStretch(3, 1);
     obraZonaLayout->setColumnStretch(5, 1);
@@ -189,10 +175,36 @@ void MainWindow::setupUi()
     obraZonaLayout->setHorizontalSpacing(12);
     obraZonaLayout->setVerticalSpacing(8);
 
-    // Añadir el bloque completo al formulario principal
     formLayout->addRow(obraZonaGroup);
 
-    // ---------------------- Lógica de desbloqueo ----------------------
+    // ---------------------- Bloque Materiales ----------------------
+    auto *materialsGroup = new QGroupBox("Materiales");
+    auto *materialsLayout = new QVBoxLayout(materialsGroup);
+
+    twMaterials = new QTableWidget(0, 5);
+    twMaterials->setHorizontalHeaderLabels({"Nombre", "Cantidad", "Precio Venta", "Precio Compra", "Total Venta"});
+    twMaterials->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    materialsLayout->addWidget(twMaterials);
+
+    cbMaterials = new QComboBox;
+    cbMaterials->addItem("Abrir Gestor de Materiales...");
+
+    btnAddMat = new QPushButton("Añadir material (NUEVO)");
+    btnRemoveMat = new QPushButton("Eliminar material");
+
+    QPushButton *btnOpenMaterials = new QPushButton("Abrir Gestor de Materiales");
+    btnOpenMaterials->setIcon(QIcon::fromTheme("document-open"));
+
+    auto *matBtns = new QHBoxLayout;
+    matBtns->addWidget(btnOpenMaterials); 
+    matBtns->addWidget(btnAddMat);
+    matBtns->addWidget(btnRemoveMat);
+    materialsLayout->addLayout(matBtns);
+
+    materialsLayout->setContentsMargins(10,10,10,10);
+    formLayout->addRow(materialsGroup);
+
+    // ---------------------- Conexiones del formulario ----------------------
     connect(cbElevador, &QComboBox::currentTextChanged, this, [=](const QString &elev){
         bool enabled = (elev == "Si");
         sbElevPortes->setEnabled(enabled);
@@ -227,7 +239,6 @@ void MainWindow::setupUi()
         }
     });
 
-    // --- Sincronizar operarios y días generales con dietas ---
     auto syncGeneralFromDietas = [=]() {
         if (cbDietasYes->currentText() == "Si") {
             spOperarios->setValue(spDietas->value());
@@ -240,7 +251,6 @@ void MainWindow::setupUi()
         }
     };
 
-    // --- Conectar cambios ---
     connect(cbDietasYes, &QComboBox::currentTextChanged, this, syncGeneralFromDietas);
     connect(spDietas, QOverload<int>::of(&QSpinBox::valueChanged), this, [=](int val){
         if (cbDietasYes->currentText() == "Si") spOperarios->setValue(val);
@@ -248,71 +258,19 @@ void MainWindow::setupUi()
     connect(spDiasDieta, QOverload<int>::of(&QSpinBox::valueChanged), this, [=](int val){
         if (cbDietasYes->currentText() == "Si") spDias->setValue(val);
     });
-
-    // --- Inicializar estado correcto ---
     syncGeneralFromDietas();
 
-
-    // ---------------------- Lógica Elevador ----------------------
-    connect(cbElevador, &QComboBox::currentTextChanged, this, [=](const QString &elevador){
-        bool elevSi = (elevador == "Si");
-
-        sbElevPortes->setEnabled(elevSi);
-        spElevDia->setEnabled(elevSi);
-    });
-
-    // --- Conexión para Kilometros / Combustible ---
     connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
         this, &MainWindow::updateDistanceAndFuel);
 
-    // --- Conexión para Kilometros / Combustible ---
-    connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-        this, &MainWindow::updateDistanceAndFuel);
-
-
-    // ---------------------- Bloque Materiales en marco ----------------------
-    auto *materialsGroup = new QGroupBox("Materiales");
-    auto *materialsLayout = new QVBoxLayout(materialsGroup);
-
-    // --- Tabla de materiales ---
-    twMaterials = new QTableWidget(0, 5);
-    twMaterials->setHorizontalHeaderLabels({"Nombre", "Cantidad", "Precio Venta", "Precio Compra", "Total Venta"});
-    twMaterials->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    materialsLayout->addWidget(twMaterials);
-
-    // --- Cargar materiales desde archivo (member variable) ---
-    //materialsMap = loadMaterialsFromFile(QCoreApplication::applicationDirPath() + "/materials.txt");
-
-    // --- Combobox y botones ---
-    cbMaterials = new QComboBox;
-    cbMaterials->addItem("Abrir Gestor de Materiales..."); // ABRIR VENTANA MATERIALES
-
-    btnAddMat = new QPushButton("Añadir material (NUEVO)");
-    btnRemoveMat = new QPushButton("Eliminar material");
-
-    QPushButton *btnOpenMaterials = new QPushButton("Abrir Gestor de Materiales");
-    btnOpenMaterials->setIcon(QIcon::fromTheme("document-open"));
-
-    auto *matBtns = new QHBoxLayout;
-    matBtns->addWidget(btnOpenMaterials); 
-    matBtns->addWidget(btnAddMat);
-    matBtns->addWidget(btnRemoveMat);
-    materialsLayout->addLayout(matBtns);
-
-    materialsLayout->setContentsMargins(10,10,10,10);
-
-    // --- Conectar el nuevo botón al slot ---
     connect(btnOpenMaterials, &QPushButton::clicked, this, &MainWindow::onOpenMaterialsWindow);
-
     connect(cbMaterials, QOverload<int>::of(&QComboBox::activated), this, [this](int index) {
-        if (index == 0) { // Siempre será 0
+        if (index == 0) {
             onOpenMaterialsWindow();
         }
     });
 
-    // --- Conexiones MODIFICADAS para Añadir material (1.c) ---
     connect(btnAddMat, &QPushButton::clicked, this, [this]() {
-        // El botón ahora SOLO tiene la función de añadir material manual
         bool ok;
         QString materialName = QInputDialog::getText(this, "Nuevo material manual", "Nombre del material:", QLineEdit::Normal, "", &ok);
         if (!ok || materialName.isEmpty()) return;
@@ -320,11 +278,9 @@ void MainWindow::setupUi()
         double sellPrice = QInputDialog::getDouble(this, "Nuevo material manual", "Precio de VENTA al cliente:", 0.0, 0, 1e6, 2, &ok);
         if (!ok) return;
         
-        // Se mantiene la lógica de costo
         double costPrice = QInputDialog::getDouble(this, "Nuevo material manual", "Precio de COMPRA (costo real):", sellPrice * 0.7, 0, 1e6, 2, &ok);
         if (!ok) return;
 
-        // Se mantiene la inserción en la tabla
         int row = twMaterials->rowCount();
         twMaterials->insertRow(row);
         twMaterials->setItem(row, 0, new QTableWidgetItem(materialName));
@@ -332,26 +288,19 @@ void MainWindow::setupUi()
         twMaterials->setItem(row, 2, new QTableWidgetItem(QString::number(sellPrice, 'f', 2)));
         twMaterials->setItem(row, 3, new QTableWidgetItem(QString::number(costPrice, 'f', 2)));
         twMaterials->setItem(row, 4, new QTableWidgetItem(QString::number(sellPrice, 'f', 2)));
-
-        // NO necesitas añadirlo a materialsMap porque es un material "manual" para este presupuesto
     });
 
     connect(twMaterials, &QTableWidget::cellChanged, this, [this](int row, int column) {
-        // Solo nos interesa cuando cambia la columna de Cantidad (columna 1)
         if (column == 1) {
             updateMaterialTotal(row);
         }
     });
 
-    // Configurar selección de filas completas (una sola vez)
     twMaterials->setSelectionBehavior(QAbstractItemView::SelectRows);
-    twMaterials->setSelectionMode(QAbstractItemView::ExtendedSelection); // permite varias filas
+    twMaterials->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-    // Conexión corregida para eliminar materiales
     connect(btnRemoveMat, &QPushButton::clicked, this, [this]() {
         auto selectedRows = twMaterials->selectionModel()->selectedRows();
-
-        // recorre en orden inverso para no desordenar el índice
         std::sort(selectedRows.begin(), selectedRows.end(), [](const QModelIndex &a, const QModelIndex &b){
             return a.row() > b.row();
         });
@@ -359,16 +308,16 @@ void MainWindow::setupUi()
         for (const auto &index : selectedRows) {
             twMaterials->removeRow(index.row());
         }
-
-        // recalcular totales después de eliminar
         onCalculate();
     });
 
-
-    // --- Añadir el grupo al form layout ---
-    formLayout->addRow(materialsGroup);
-
-    // ---------------------- Botones ----------------------
+    // ---------------------- Botones de acción ----------------------
+    auto *buttonsGroup = new QGroupBox("Acciones");
+    auto *buttonsGroupLayout = new QVBoxLayout(buttonsGroup);
+    
+    auto *colLeft = new QVBoxLayout;
+    auto *colRight = new QVBoxLayout;
+    
     btnCalc = new QPushButton("Calcular");
     btnSave = new QPushButton("Guardar presupuesto");
     btnPDF = new QPushButton("Guardar en PDF");
@@ -376,91 +325,80 @@ void MainWindow::setupUi()
     btnStart = new QPushButton("Mantenimientos");
     QPushButton *btnEditPrices = new QPushButton("Editar precios base");
 
-    QLabel *lbl1 = new QLabel("Total sin IVA:");
-    lblTotalNoIVA = new QLabel("0.00 €");
-    QLabel *lbl2 = new QLabel("Total con IVA (21%):");
-    lblTotalConIVA = new QLabel("0.00 €");
-
-    // --- Cálculo Beneficios --------------------------------- 
-    QLabel *lbl3 = new QLabel("Costo estimado:");  
-    lblCostoEstimado = new QLabel("0.00 €");   
-    QLabel *lbl4 = new QLabel("Beneficio estimado:"); 
-    lblBeneficioEstimado = new QLabel("0.00 €");     
-
-    // ---------------------- Conexiones ----------------------
-    connect(btnCalc, &QPushButton::clicked, this, &MainWindow::onCalculate);
-    connect(btnSave, &QPushButton::clicked, this, &MainWindow::onSaveBudget);
-    connect(btnEditPrices, &QPushButton::clicked, this, &MainWindow::onEditPrices);
-    connect(btnPDF, &QPushButton::clicked, this, &MainWindow::onExportPDF);
-    connect(btnPrint, &QPushButton::clicked, this, &MainWindow::onPrintBudget);
-    connect(btnStart, &QPushButton::clicked, this, &MainWindow::onBackToStart);
-
-    // ---------------------- Bloque de botones ----------------------
-    auto *colLeft = new QVBoxLayout;
     colLeft->addWidget(btnCalc);
     colLeft->addWidget(btnPDF);
     colLeft->addWidget(btnEditPrices);
 
-    auto *colRight = new QVBoxLayout;
     colRight->addWidget(btnSave);
     colRight->addWidget(btnPrint);
     colRight->addWidget(btnStart);
 
-    // --- Reducir espacio entre botones ---
-    colLeft->setSpacing(6);
-    colRight->setSpacing(6);
-
-    // --- Contenedor para las dos columnas ---
     auto *buttonsGrid = new QHBoxLayout;
     buttonsGrid->addLayout(colLeft);
     buttonsGrid->addSpacing(20);
     buttonsGrid->addLayout(colRight);
-    buttonsGrid->setContentsMargins(0, 0, 0, 0);
-
-    // --- Agrupar botones en bloque con margen visual ---
-    auto *buttonsGroup = new QGroupBox("Acciones");
-    auto *buttonsGroupLayout = new QVBoxLayout(buttonsGroup);
     buttonsGroupLayout->addLayout(buttonsGrid);
     buttonsGroupLayout->setContentsMargins(10, 10, 10, 10);
 
-    // ---------------------- Bloque de resultados ----------------------
+    // ---------------------- Totales ----------------------
     auto *totalsGroup = new QGroupBox("Resumen de presupuesto");
     auto *totalsLayout = new QGridLayout(totalsGroup);
-    totalsLayout->addWidget(lbl1, 0, 0, Qt::AlignRight);
-    totalsLayout->addWidget(lblTotalNoIVA, 0, 1, Qt::AlignLeft);
-    totalsLayout->addWidget(lbl2, 1, 0, Qt::AlignRight);
-    totalsLayout->addWidget(lblTotalConIVA, 1, 1, Qt::AlignLeft);
+    
+    lblTotalNoIVA = new QLabel("0.00 €");
+    lblTotalConIVA = new QLabel("0.00 €");
+    lblCostoEstimado = new QLabel("0.00 €");   
+    lblBeneficioEstimado = new QLabel("0.00 €");
 
-    totalsLayout->addWidget(lbl3, 2, 0, Qt::AlignRight);     
+    totalsLayout->addWidget(new QLabel("Total sin IVA:"), 0, 0, Qt::AlignRight);
+    totalsLayout->addWidget(lblTotalNoIVA, 0, 1, Qt::AlignLeft);
+    totalsLayout->addWidget(new QLabel("Total con IVA (21%):"), 1, 0, Qt::AlignRight);
+    totalsLayout->addWidget(lblTotalConIVA, 1, 1, Qt::AlignLeft);
+    totalsLayout->addWidget(new QLabel("Costo estimado:"), 2, 0, Qt::AlignRight);     
     totalsLayout->addWidget(lblCostoEstimado, 2, 1, Qt::AlignLeft);  
-    totalsLayout->addWidget(lbl4, 3, 0, Qt::AlignRight);          
-    totalsLayout->addWidget(lblBeneficioEstimado, 3, 1, Qt::AlignLeft);  
+    totalsLayout->addWidget(new QLabel("Beneficio estimado:"), 3, 0, Qt::AlignRight);          
+    totalsLayout->addWidget(lblBeneficioEstimado, 3, 1, Qt::AlignLeft);
 
     totalsLayout->setContentsMargins(10, 10, 10, 10);
 
-    // ---------------------- Layout principal (izquierda) ----------------------
-    auto *leftV = new QVBoxLayout;
+    // --- Ensamblar columna izquierda ---
     leftV->addLayout(formLayout);
     leftV->addWidget(buttonsGroup);
     leftV->addWidget(totalsGroup);
     leftV->addStretch();
+    leftWidget->setLayout(leftV);
 
-    // ---------------------- Right Column (Presupuestos) ----------------------
-    auto *rightV = new QVBoxLayout;
+    // ==================== COLUMNA DERECHA ====================
+    auto *rightWidget = new QWidget;
+    auto *rightV = new QVBoxLayout(rightWidget);
+
     lwBudgets = new QListWidget;
     QPushButton *btnLoad = new QPushButton("Abrir seleccionado");
-    connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadSelectedBudget);
     QPushButton *btnDelete = new QPushButton("Eliminar seleccionado");
-    connect(btnDelete, &QPushButton::clicked, this, &MainWindow::onDeleteSelectedBudget);
-
-    // --- Nuevos botones ---
     QPushButton *btnClearFields = new QPushButton("Borrar campos");
-    connect(btnClearFields, &QPushButton::clicked, this, &MainWindow::onDeleteFields);
     QPushButton *btnCloseProject = new QPushButton("Cerrar obra");
     btnCloseProject->setObjectName("btnCloseProject");
-    connect(btnCloseProject, &QPushButton::clicked, this, &MainWindow::onToggleStatus);
 
-    // Layouts de botones
+    // --- Buscador ---
+    auto *searchLayout = new QHBoxLayout;
+    QLineEdit *leSearchClient = new QLineEdit;
+    leSearchClient->setPlaceholderText("Buscar cliente...");
+    QPushButton *btnClearSearch = new QPushButton("✕");
+    btnClearSearch->setToolTip("Limpiar búsqueda");
+    btnClearSearch->setFixedSize(24, 24);
+
+    connect(leSearchClient, &QLineEdit::textChanged, this, [this](const QString &text) {
+        for (int i = 0; i < lwBudgets->count(); ++i) {
+            QListWidgetItem *item = lwBudgets->item(i);
+            item->setHidden(!item->text().contains(text, Qt::CaseInsensitive));
+        }
+    });
+
+    connect(btnClearSearch, &QPushButton::clicked, leSearchClient, &QLineEdit::clear);
+    
+    searchLayout->addWidget(leSearchClient);
+    searchLayout->addWidget(btnClearSearch);
+
+    // --- Layouts de botones ---
     auto *btnsLayout1 = new QHBoxLayout;
     btnsLayout1->addWidget(btnLoad);
     btnsLayout1->addWidget(btnDelete);
@@ -469,73 +407,47 @@ void MainWindow::setupUi()
     btnsLayout2->addWidget(btnClearFields);
     btnsLayout2->addWidget(btnCloseProject);
 
-    // --- Buscador de clientes con botón de limpiar ---
-    auto *searchLayout = new QHBoxLayout;
-    QLineEdit *leSearchClient = new QLineEdit;
-    leSearchClient->setPlaceholderText("Buscar cliente...");
+    // --- Conexiones columna derecha ---
+    connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadSelectedBudget);
+    connect(btnDelete, &QPushButton::clicked, this, &MainWindow::onDeleteSelectedBudget);
+    connect(btnClearFields, &QPushButton::clicked, this, &MainWindow::onDeleteFields);
+    connect(btnCloseProject, &QPushButton::clicked, this, &MainWindow::onToggleStatus);
 
-    QPushButton *btnClearSearch = new QPushButton("✕");
-    btnClearSearch->setToolTip("Limpiar búsqueda");
-    btnClearSearch->setFixedSize(24, 24);
-
-    // Conexión para filtrar dinámicamente
-    connect(leSearchClient, &QLineEdit::textChanged, this, [this](const QString &text) {
-        for (int i = 0; i < lwBudgets->count(); ++i) {
-            QListWidgetItem *item = lwBudgets->item(i);
-            item->setHidden(!item->text().contains(text, Qt::CaseInsensitive));
-        }
-    });
-
-    // Conexión del botón para limpiar
-    connect(btnClearSearch, &QPushButton::clicked, leSearchClient, &QLineEdit::clear);
-    
-    // Añadimos los widgets al layout
-    searchLayout->addWidget(leSearchClient);
-    searchLayout->addWidget(btnClearSearch);
-
-    // Agregamos a la columna derecha
+    // --- Ensamblar columna derecha ---
     rightV->addWidget(new QLabel("Presupuestos guardados"));
     rightV->addLayout(searchLayout);
     rightV->addWidget(lwBudgets);
     rightV->addLayout(btnsLayout1);
     rightV->addLayout(btnsLayout2);
+    rightV->addStretch();
+    rightWidget->setLayout(rightV);
 
+    // ==================== CONFIGURAR SPLITTER ====================
+    mainSplitter->addWidget(leftWidget);
+    mainSplitter->addWidget(rightWidget);
+    mainSplitter->setStretchFactor(0, 3);
+    mainSplitter->setStretchFactor(1, 1);
+    mainSplitter->setSizes({900, 300});
 
-    // ---------------------- Main Layout ----------------------
-    mainLayout->addLayout(leftV, 3);
-    mainLayout->addLayout(rightV, 1);
-    w->setLayout(mainLayout);
-    setCentralWidget(w);
+    // ==================== LAYOUT FINAL ====================
+    auto *mainLayout = new QHBoxLayout(central);
+    mainLayout->addWidget(mainSplitter);
+    central->setLayout(mainLayout);
+
+    setCentralWidget(central);
     setWindowTitle("Australair - Gestor de presupuestos");
+    resize(1400, 800);
 
-    // ---------------------- Cargar presupuestos guardados ----------------------
-    QSqlQuery q(Database::instance());
-    q.exec(R"(
-        SELECT b.id, c.name, b.created_at, b.status
-        FROM budgets b
-        LEFT JOIN clients c ON b.client_id = c.id
-        ORDER BY b.created_at DESC
-    )");
-    while (q.next()) {
-        int id = q.value(0).toInt();
-        QString clientName = q.value(1).toString();
-        QString ts = q.value(2).toString();
-        QString st = q.value(3).toString();
+    // ==================== CARGAR DATOS ====================
+    refreshBudgetsList();
 
-        QString estadoTexto = (st == "cerrada") ? "CERRADA" : "ABIERTA";
-        QString emoji = (st == "cerrada") ? "●" : "○";
-        
-        QString label = QString("%1 - %2  |  %3  (%4) %5")
-                            .arg(id)
-                            .arg(clientName.isEmpty() ? "Sin cliente" : clientName)
-                            .arg(ts)
-                            .arg(estadoTexto)
-                            .arg(emoji);
-        auto *it = new QListWidgetItem(label);
-        it->setData(Qt::UserRole, id);
-        
-        lwBudgets->addItem(it);
-    }
+    // ==================== CONEXIONES FINALES ====================
+    connect(btnCalc, &QPushButton::clicked, this, &MainWindow::onCalculate);
+    connect(btnSave, &QPushButton::clicked, this, &MainWindow::onSaveBudget);
+    connect(btnEditPrices, &QPushButton::clicked, this, &MainWindow::onEditPrices);
+    connect(btnPDF, &QPushButton::clicked, this, &MainWindow::onExportPDF);
+    connect(btnPrint, &QPushButton::clicked, this, &MainWindow::onPrintBudget);
+    connect(btnStart, &QPushButton::clicked, this, &MainWindow::onBackToStart);
 }
 
 void MainWindow::onOpenMaterialsWindow()

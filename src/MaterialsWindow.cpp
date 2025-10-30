@@ -36,63 +36,77 @@ MaterialsWindow::MaterialsWindow(QWidget *parent) : QDialog(parent)
     loadMaterials();
 }
 
-MaterialsWindow::~MaterialsWindow(){}
+//MaterialsWindow::~MaterialsWindow(){}
 
 void MaterialsWindow::setupUi()
 {
+    // Crear todos los widgets PRIMERO
+    lwCategories = new QListWidget(this);
+    lwMaterials = new QListWidget(this);
+    twSelection = new QTableWidget(0, 4, this);
+    btnAdd = new QPushButton("Añadir »", this);
+    btnRemove = new QPushButton("« Eliminar", this);
+    btnSave = new QPushButton("Guardar Selección y Cerrar", this);
+
     auto *mainLayout = new QVBoxLayout(this);
-    auto *hLayout = new QHBoxLayout;
     
-    // --- 1. Panel de Categorías ---
-    lwCategories = new QListWidget;
-    lwCategories->setMaximumWidth(150);
-    hLayout->addWidget(lwCategories);
+    // Splitter principal
+    auto *hSplitter = new QSplitter(Qt::Horizontal, this);
 
-    // --- 2. Panel de Materiales por Categoría ---
-    lwMaterials = new QListWidget;
-    hLayout->addWidget(lwMaterials);
+    // Panel izquierdo: Categorías
+    lwCategories->setMaximumWidth(200);
+    hSplitter->addWidget(lwCategories);
 
-    // --- 3. Panel de Controles (Añadir/Eliminar) ---
-    auto *vControls = new QVBoxLayout;
-    btnAdd = new QPushButton("Añadir »");
-    btnRemove = new QPushButton("« Eliminar");
-    vControls->addWidget(btnAdd);
-    vControls->addWidget(btnRemove);
-    vControls->addStretch(); // Relleno para centrar botones
-    hLayout->addLayout(vControls);
+    // Panel central: Materiales  
+    lwMaterials->setMinimumWidth(300);
+    hSplitter->addWidget(lwMaterials);
 
-    // --- 4. Tabla de Selección ---
-    twSelection = new QTableWidget(0, 4);
+    // Panel derecho: Controles
+    auto *controlsPanel = new QWidget(this);
+    auto *controlsLayout = new QVBoxLayout(controlsPanel);
+    controlsLayout->addWidget(btnAdd);
+    controlsLayout->addWidget(btnRemove);
+    controlsLayout->addStretch();
+    controlsPanel->setMaximumWidth(150);
+    hSplitter->addWidget(controlsPanel);
+
+    // Configurar splitter
+    hSplitter->setStretchFactor(0, 1);  // Categorías
+    hSplitter->setStretchFactor(1, 3);  // Materiales
+    hSplitter->setStretchFactor(2, 1);  // Controles
+
+    mainLayout->addWidget(hSplitter);
+
+    // Tabla de selección
+    auto *selectionLabel = new QLabel("Materiales seleccionados:", this);
+    mainLayout->addWidget(selectionLabel);
+
     twSelection->setHorizontalHeaderLabels({"Nombre", "PVP", "Costo", "Cantidad"});
     twSelection->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    // Para que se pueda modificar la cantidad
     twSelection->setSelectionBehavior(QAbstractItemView::SelectRows);
     twSelection->setSelectionMode(QAbstractItemView::SingleSelection);
-    
-    // Conexiones
+    mainLayout->addWidget(twSelection);
+
+    // Botón guardar
+    mainLayout->addWidget(btnSave, 0, Qt::AlignRight);
+
+    // Conexiones (igual que antes)
     connect(lwCategories, &QListWidget::currentTextChanged, this, &MaterialsWindow::onCategoryChanged);
     connect(btnAdd, &QPushButton::clicked, this, &MaterialsWindow::onAddMaterialClicked);
     connect(btnRemove, &QPushButton::clicked, this, &MaterialsWindow::onRemoveMaterialClicked);
+    connect(btnSave, &QPushButton::clicked, this, &MaterialsWindow::onSaveSelection);
+    
     connect(twSelection, &QTableWidget::cellChanged, this, [this](int row, int column){
-        // Solo nos interesa la columna de Cantidad (columna 3)
-        if (column == 3) {
+        if (column == 3 && row >= 0 && row < selectedMaterials.size()) {
             bool ok;
             int newQty = twSelection->item(row, column)->text().toInt(&ok);
-            if (ok && row < selectedMaterials.size()) {
+            if (ok) {
                 selectedMaterials[row].quantity = newQty;
             }
         }
     });
 
-    mainLayout->addLayout(hLayout);
-    mainLayout->addWidget(new QLabel("Materiales a añadir al presupuesto:"));
-    mainLayout->addWidget(twSelection);
-    
-    btnSave = new QPushButton("Guardar Selección y Cerrar");
-    connect(btnSave, &QPushButton::clicked, this, &MaterialsWindow::onSaveSelection);
-    mainLayout->addWidget(btnSave, 0, Qt::AlignRight);
-
-    setMinimumSize(1200, 600);
+    setMinimumSize(1000, 600);
 }
 
 void MaterialsWindow::loadMaterials()

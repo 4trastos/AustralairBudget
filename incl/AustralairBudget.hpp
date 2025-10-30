@@ -14,6 +14,7 @@ class AustralairBudget : public QWidget {
 
 public:
     explicit AustralairBudget(QWidget *parent = nullptr);
+    //~AustralairBudget() = default;
 
 private slots:
     void openPresupuestos();

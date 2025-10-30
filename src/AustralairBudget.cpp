@@ -67,6 +67,8 @@ AustralairBudget::AustralairBudget(QWidget *parent) : QWidget(parent) {
     setLayout(mainLayout);
 }
 
+//AustralairBudget::~AustralairBudget(){}
+
 // --- Slots ---
 void AustralairBudget::openPresupuestos() {
     MainWindow *w = new MainWindow;
