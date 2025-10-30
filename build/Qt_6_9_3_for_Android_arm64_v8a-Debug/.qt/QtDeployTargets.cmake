@@ -1,2 +1,0 @@
-set(__QT_DEPLOY_TARGET_australair_FILE /home/davgalle/Documentos/AustralairBudget/build/Qt_6_9_3_for_Android_arm64_v8a-Debug/australair)
-set(__QT_DEPLOY_TARGET_australair_TYPE EXECUTABLE)

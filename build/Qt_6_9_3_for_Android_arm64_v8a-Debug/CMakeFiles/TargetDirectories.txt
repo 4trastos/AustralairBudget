@@ -1,6 +1,0 @@
-/home/davgalle/Documentos/AustralairBudget/build/Qt_6_9_3_for_Android_arm64_v8a-Debug/CMakeFiles/apk.dir
-/home/davgalle/Documentos/AustralairBudget/build/Qt_6_9_3_for_Android_arm64_v8a-Debug/CMakeFiles/aab.dir
-/home/davgalle/Documentos/AustralairBudget/build/Qt_6_9_3_for_Android_arm64_v8a-Debug/CMakeFiles/aar.dir
-/home/davgalle/Documentos/AustralairBudget/build/Qt_6_9_3_for_Android_arm64_v8a-Debug/CMakeFiles/australair.dir
-/home/davgalle/Documentos/AustralairBudget/build/Qt_6_9_3_for_Android_arm64_v8a-Debug/CMakeFiles/edit_cache.dir
-/home/davgalle/Documentos/AustralairBudget/build/Qt_6_9_3_for_Android_arm64_v8a-Debug/CMakeFiles/rebuild_cache.dir
