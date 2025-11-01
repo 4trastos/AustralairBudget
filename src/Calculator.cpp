@@ -205,6 +205,60 @@ void MainWindow::updateMaterialTotal(int row) {
     onCalculate();
 }
 
+void MainWindow::onCalculateDesviation()
+{
+    // NO ES NECESARIO RECALCULAR. onCalculate() ya se ejecutó y actualizó el Beneficio.
 
+    if (currentBudgetId <= 0) {
+        QMessageBox::warning(this, "Error", "No hay un presupuesto cargado.");
+        return;
+    }
+    
+    // ... (Validaciones de estado y originalBudgetIdForDesviacion) ...
+
+    QSqlDatabase d = Database::instance();
+    
+    // 1. Obtener PVP Original (Sin IVA) para la comparación
+    QSqlQuery qOriginal(d);
+    qOriginal.prepare("SELECT total_no_iva FROM budgets WHERE id = ?");
+    qOriginal.addBindValue(originalBudgetIdForDesviacion);
+
+    if (qOriginal.exec() && qOriginal.next()) {
+        double totalOriginalNoIVA = qOriginal.value(0).toDouble(); 
+        
+        // El total final ejecutado se toma de la etiqueta actualizada por onCalculate()
+        double totalFinalEjecutadoNoIVA = lblTotalNoIVA->text().replace(" €", "").toDouble();
+
+        double desviacionPVP = totalFinalEjecutadoNoIVA - totalOriginalNoIVA;
+        
+        // 2. Actualizar el QLabel de Desviación (Resultado final del proceso)
+        if (lblDesviacionPVP) {
+            lblDesviacionPVP->setText(QString::number(desviacionPVP, 'f', 2) + " €");
+            lblDesviacionPVP->setToolTip(QString("Inicial (Sin IVA): %1 €").arg(QString::number(totalOriginalNoIVA, 'f', 2)));
+            lblDesviacionPVP->setStyleSheet(desviacionPVP >= 0 ? "color: green; font-weight: bold;" : "color: red; font-weight: bold;");
+        }
+    } else {
+        QMessageBox::critical(this, "Error DB", "No se pudieron obtener los totales del presupuesto original.");
+        return;
+    }
+    
+    // 3. Marcar la copia de desviación como CERRADA
+    QSqlQuery qCloseCopy(d);
+    qCloseCopy.prepare("UPDATE budgets SET status = 'cerrada' WHERE id = ?");
+    qCloseCopy.addBindValue(currentBudgetId);
+    
+    if (!qCloseCopy.exec()) {
+        QMessageBox::critical(this, "Error DB", "Error al marcar la copia de obra como CERRADA.");
+        return;
+    }
+
+    // 4. Aplicar el bloqueo, actualizar la lista y limpiar la referencia
+    currentBudgetStatus = "cerrada";
+    toggleInputFields(false);
+    refreshBudgetsList();
+    originalBudgetIdForDesviacion = 0;
+    
+    QMessageBox::information(this, "Obra Cerrada", "Desviación calculada y visible en el resumen. Obra ejecutada marcada como CERRADA.");
+}
 
 //*ho0sJ8!o)@*H3Oqb!8P7mwI

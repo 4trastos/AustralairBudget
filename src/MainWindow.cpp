@@ -334,7 +334,7 @@ void MainWindow::setupUi()
     auto *colLeft = new QVBoxLayout;
     auto *colRight = new QVBoxLayout;
     
-    btnCalc = new QPushButton("Recalcular");
+    btnCalc = new QPushButton("Calcular Desviación");
     btnSave = new QPushButton("Guardar presupuesto");
     btnPDF = new QPushButton("Guardar en PDF");
     btnPrint = new QPushButton("Imprimir presupuesto");
@@ -412,6 +412,10 @@ void MainWindow::setupUi()
     totalsRight->addWidget(new QLabel("Beneficio estimado:"), 3, 0, Qt::AlignRight);          
     totalsRight->addWidget(lblBeneficioEstimado, 3, 1, Qt::AlignLeft);
 
+    lblDesviacionPVP = new QLabel("N/A €");
+    totalsRight->addWidget(new QLabel("Desviación PVP:"), 4, 0, Qt::AlignRight);     
+    totalsRight->addWidget(lblDesviacionPVP, 4, 1, Qt::AlignLeft);
+
     totalsRight->setContentsMargins(10, 10, 10, 10);
     
     // Ensamblar GroupBox Totales
@@ -474,7 +478,8 @@ void MainWindow::setupUi()
     connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadSelectedBudget);
     connect(btnDelete, &QPushButton::clicked, this, &MainWindow::onDeleteSelectedBudget);
     connect(btnClearFields, &QPushButton::clicked, this, &MainWindow::onDeleteFields);
-    connect(btnCloseProject, &QPushButton::clicked, this, &MainWindow::onToggleStatus);
+    //connect(btnCloseProject, &QPushButton::clicked, this, &MainWindow::onToggleStatus);
+    connect(btnCloseProject, &QPushButton::clicked, this, &MainWindow::onCloseProject);
     connect(btnPrice, &QPushButton::clicked, this, &MainWindow::onEditBasePrices);
 
     // --- Ensamblar columna derecha ---
@@ -510,7 +515,19 @@ void MainWindow::setupUi()
         QSpinBox, QDoubleSpinBox, QComboBox {
             min-height: 10px; 
             padding: 2px; 
-        }
+        }Espera, ¡hay una confusión en tu requisito!
+
+    Un presupuesto nuevo se guarda con status = "abierta".
+
+    Solo los presupuestos con status = "cerrada" deben estar bloqueados.
+
+    Si quieres que el presupuesto recién guardado se quede bloqueado, debes guardarlo con status = "cerrada".
+
+        Si lo guardas como "abierta", debe permanecer desbloqueado para edición, hasta que pulses "Cerrar obra".
+
+Aclaración y Solución de Bloqueo: Si el requisito es que, tras guardar un presupuesto nuevo, la interfaz se bloquee para evitar cambios accidentales, haz esto:
+
+
         
         QLineEdit {
             min-height: 10px;
@@ -526,6 +543,7 @@ void MainWindow::setupUi()
 
     // ==================== CONEXIONES FINALES ====================
     connect(btnCalc, &QPushButton::clicked, this, &MainWindow::onCalculate);
+    connect(btnCalc, &QPushButton::clicked, this, &MainWindow::onCalculateDesviation);
     connect(btnSave, &QPushButton::clicked, this, &MainWindow::onSaveBudget);
     connect(btnEditPrices, &QPushButton::clicked, this, &MainWindow::onShowMaterialsList);
     connect(btnPDF, &QPushButton::clicked, this, &MainWindow::onExportPDF);
@@ -861,4 +879,79 @@ void MainWindow::showEditBasePricesDialog()
         QMessageBox::information(this, "Ajustes", "Precios base actualizados. Recalculando presupuesto.");
         onCalculate();
     }
+}
+
+void MainWindow::toggleInputFields(bool enabled)
+{
+    // Bloque Datos del Cliente
+    leClientName->setEnabled(enabled);
+    leCompany->setEnabled(enabled);
+    leContact->setEnabled(enabled);
+    leAddress->setEnabled(enabled);
+    lePhone->setEnabled(enabled);
+    leEmail->setEnabled(enabled);
+    leCIF->setEnabled(enabled);
+    leNumPresu->setEnabled(enabled);
+    leFecha->setEnabled(enabled);
+
+    // Bloque Datos de la Obra 
+    sbMetros->setEnabled(enabled);
+    cbTipoLocal->setEnabled(enabled);
+    cbTipoCubierta->setEnabled(enabled);
+    cbExtractor->setEnabled(enabled);
+    
+    // Elevación: Si enabled es falso, se deshabilita todo. Si enabled es verdadero,
+    // el control lo toma el callback de cbElevador.
+    cbElevador->setEnabled(enabled);
+    if (!enabled) { 
+        sbElevPortes->setEnabled(false);
+        spElevDia->setEnabled(false);
+        spElevPrecDia->setEnabled(false);
+    }
+    
+    // Zona y Dietas: Similar a elevación.
+    cbZona->setEnabled(enabled);
+    rbCorta->setEnabled(enabled);
+    rbMedia->setEnabled(enabled);
+    rbLarga->setEnabled(enabled);
+
+    // Dietas (El spinbox debe permanecer deshabilitado por el precio fijo)
+    // Pero el checkbox de 'Si/No' debe controlarse
+    cbDietasYes->setEnabled(enabled); 
+    if (!enabled) {
+        spDietas->setEnabled(false);
+        spDiasDieta->setEnabled(false);
+    }
+    
+    // Furgonetas y Combustible
+    spFurgonetas->setEnabled(enabled);
+    sbKM->setEnabled(enabled);
+    sbLitros->setEnabled(enabled);
+
+    // Los campos de precio fijo (Precio Venta Dieta y Coste Furgo) deben 
+    // permanecer deshabilitados SIEMPRE, ya que se editan en 'Editar precios base'.
+    // Los campos sbPrecioDiet y sbCosteFurgo ya están deshabilitados en setupUi(), 
+    // así que no necesitamos tocarlos aquí, a menos que quieras asegurarte de que 
+    // NUNCA se habiliten por error.
+    
+    // Horas y Operarios
+    spOperarios->setEnabled(enabled);
+    spDias->setEnabled(enabled);
+    sbHoras->setEnabled(enabled);
+    sbHorasViaje->setEnabled(enabled);
+
+    // Bloque Materiales
+    twMaterials->setEnabled(enabled);
+    QPushButton *btnOpenMaterials = findChild<QPushButton*>("btnOpenMaterials"); // Asumo que este es el nombre
+    if (btnOpenMaterials) btnOpenMaterials->setEnabled(enabled);
+    btnAddMat->setEnabled(enabled);
+    btnRemoveMat->setEnabled(enabled);
+    
+    // Botones de acción principales
+    QPushButton *btnCalc = findChild<QPushButton*>("btnCalc");
+    QPushButton *btnSave = findChild<QPushButton*>("btnSave");
+    if (btnCalc) btnCalc->setEnabled(enabled);
+    if (btnSave) btnSave->setEnabled(enabled);
+
+    // El botón de Cerrar/Reabrir Obra siempre debe estar habilitado, excepto si no hay presupuesto cargado.
 }

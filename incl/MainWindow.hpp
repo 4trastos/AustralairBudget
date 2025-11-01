@@ -53,6 +53,10 @@ private slots:
     void onOpenMaterialsWindow();
     void onToggleIVA(bool checked);         // Para el botón 'Mostrar IVA'
     void onToggleImprevistos(bool checked); // Para el botón 'Imprevistos'
+    void toggleInputFields(bool enabled);
+    void onCalculateDesviation();
+    bool updateExistingBudget(int budgetId);
+    void onCloseProject();
 
 private:
     void setupUi();
@@ -76,8 +80,11 @@ private:
     // --- Variables de estado ----
     int currentBudgetId = 0;
     QString currentStatus = "Abierta";
+    QString currentBudgetID;
+    QString currentBudgetStatus;
     bool isIVAShown = false;
     bool isImprevistosApplied = false;
+    int originalBudgetIdForDesviacion = 0;
     
     // --- Widgets----
     QLineEdit *leClientName, *leCompany, *leContact, *leAddress, *lePhone, *leEmail, *leCIF, *leNumPresu, *leLocalidadObra, *leFecha, *leExtra;
@@ -96,6 +103,7 @@ private:
     QLabel *lblTotalNoIVA_Cerrada, *lblTotalConIVA_Cerrada;
     QLabel *lblCosteEmpresa, *lblBeneficio;
     QLabel *lblCostoEstimado, *lblBeneficioEstimado;
+    QLabel *lblDesviacionPVP = nullptr;
 };
 
 #endif
