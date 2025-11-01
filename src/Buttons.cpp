@@ -82,6 +82,7 @@ void MainWindow::onDeleteFields() {
     spElevPrecDia->setValue(0);
     spPrecioDiet->setValue(0);
     spFurgonetas->setValue(0);
+    sbCosteFurgo->setValue(0);
 
     // --- ComboBoxes ---
     cbTipoLocal->setCurrentIndex(0);

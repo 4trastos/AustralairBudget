@@ -53,6 +53,7 @@ void Database::ensureSchema() {
       dias_dieta INTEGER,
       precio_dieta INTEGER,
       furgonetas INTEGER,
+      coste_furgonetas INTEGER,
       km REAL,
       combustible REAL,
       operarios INTEGER,

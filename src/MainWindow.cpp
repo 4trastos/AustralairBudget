@@ -93,6 +93,7 @@ void MainWindow::setupUi()
     sbHorasViaje = new QDoubleSpinBox; sbHorasViaje->setRange(0,1e5);
     spPrecioDiet = new QSpinBox; spPrecioDiet->setRange(0,1000);
     spFurgonetas = new QSpinBox; spFurgonetas->setRange(0,100);
+    sbCosteFurgo = new QDoubleSpinBox; sbCosteFurgo->setRange(0, 1e6); sbCosteFurgo->setSuffix(" €");
 
     cbElevador = new QComboBox; cbElevador->addItems({"No","Si"});
     sbElevPortes = new QDoubleSpinBox; sbElevPortes->setRange(0, 1e6); sbElevPortes->setSuffix(" €");
@@ -153,10 +154,12 @@ void MainWindow::setupUi()
     // --- FILA 5: Furgonetas y combustible ---
     obraZonaLayout->addWidget(new QLabel("Furgonetas:"), 4, 0);
     obraZonaLayout->addWidget(spFurgonetas, 4, 1);
-    obraZonaLayout->addWidget(new QLabel("KM desplazamiento:"), 4, 2);
-    obraZonaLayout->addWidget(sbKM, 4, 3);
-    obraZonaLayout->addWidget(new QLabel("Combustible:"), 4, 4);
-    obraZonaLayout->addWidget(sbLitros, 4, 5);
+    obraZonaLayout->addWidget(new QLabel("Coste Furgoneta:"), 4, 2);
+    obraZonaLayout->addWidget(sbCosteFurgo, 4, 3);
+    obraZonaLayout->addWidget(new QLabel("KM desplazamiento:"), 4, 4);
+    obraZonaLayout->addWidget(sbKM, 4, 5);
+    obraZonaLayout->addWidget(new QLabel("Combustible:"), 4, 6);
+    obraZonaLayout->addWidget(sbLitros, 4, 7);
 
     // --- FILA 6: Horas y Operarios ---
     obraZonaLayout->addWidget(new QLabel("Nº Operarios:"), 5, 0);
@@ -323,11 +326,12 @@ void MainWindow::setupUi()
     btnPDF = new QPushButton("Guardar en PDF");
     btnPrint = new QPushButton("Imprimir presupuesto");
     btnStart = new QPushButton("Mantenimientos");
-    QPushButton *btnEditPrices = new QPushButton("Editar precios base");
+    //QPushButton *btnEditPrices = new QPushButton("Editar precios base");
+    QPushButton *btnEditPrices = new QPushButton("Mostrar lista de materiales");
 
-    colLeft->addWidget(btnCalc);
-    colLeft->addWidget(btnPDF);
     colLeft->addWidget(btnEditPrices);
+    colLeft->addWidget(btnPDF);
+    colLeft->addWidget(btnCalc);
 
     colRight->addWidget(btnSave);
     colRight->addWidget(btnPrint);
@@ -342,9 +346,27 @@ void MainWindow::setupUi()
 
     // ---------------------- Totales ----------------------
     auto *totalsGroup = new QGroupBox("Resumen de presupuesto");
-    auto *totalsLayout = new QGridLayout(totalsGroup);
+    //auto *totalsLayout = new QGridLayout(totalsGroup);
+    auto *totalsHLayout = new QHBoxLayout(totalsGroup);
+
+    // ---------------------- Columna Izquierda de Totales (Controles) ----------------------
+    auto *totalsLeft = new QVBoxLayout;
+
+    // Botón Mostrar IVA
+    QPushButton *btnToggleIVA = new QPushButton("Mostrar IVA (NO)");
+    btnToggleIVA->setCheckable(true);
+    connect(btnToggleIVA, &QPushButton::toggled, this, &MainWindow::onToggleIVA);
     
-    lblTotalNoIVA = new QLabel("0.00 €");
+    // Botón Imprevistos
+    QPushButton *btnToggleImprevistos = new QPushButton("Imprevistos (10% - NO)");
+    btnToggleImprevistos->setCheckable(true);
+    connect(btnToggleImprevistos, &QPushButton::toggled, this, &MainWindow::onToggleImprevistos);
+    
+    totalsLeft->addWidget(btnToggleIVA);
+    totalsLeft->addWidget(btnToggleImprevistos);
+    totalsLeft->addStretch();
+    
+    /* lblTotalNoIVA = new QLabel("0.00 €");
     lblTotalConIVA = new QLabel("0.00 €");
     lblCostoEstimado = new QLabel("0.00 €");   
     lblBeneficioEstimado = new QLabel("0.00 €");
@@ -358,7 +380,47 @@ void MainWindow::setupUi()
     totalsLayout->addWidget(new QLabel("Beneficio estimado:"), 3, 0, Qt::AlignRight);          
     totalsLayout->addWidget(lblBeneficioEstimado, 3, 1, Qt::AlignLeft);
 
-    totalsLayout->setContentsMargins(10, 10, 10, 10);
+    totalsLayout->setContentsMargins(10, 10, 10, 10); */
+
+    // ---------------------- Columna Derecha de Totales (Valores) ----------------------
+    auto *totalsRight = new QGridLayout;
+    
+    lblTotalNoIVA = new QLabel("0.00 €");
+    lblTotalConIVA = new QLabel("0.00 €");
+    lblCostoEstimado = new QLabel("0.00 €");   
+    lblBeneficioEstimado = new QLabel("0.00 €");
+
+    // Fila 0: Total sin IVA (Siempre visible)
+    totalsRight->addWidget(new QLabel("Total sin IVA:"), 0, 0, Qt::AlignRight);
+    totalsRight->addWidget(lblTotalNoIVA, 0, 1, Qt::AlignLeft);
+    
+    // Fila 1: Total con IVA (Inicialmente oculta)
+    // Usamos un QWidget para envolver la fila de IVA para poder ocultarla fácilmente
+    ivaRowWidget = new QWidget;
+    auto *ivaRowLayout = new QGridLayout(ivaRowWidget);
+    lblIVAPct = new QLabel("(21%)"); // Etiqueta para el porcentaje de IVA
+    ivaRowLayout->setContentsMargins(0,0,0,0);
+    ivaRowLayout->setHorizontalSpacing(12);
+    ivaRowLayout->addWidget(new QLabel("Total con IVA:"), 0, 0, Qt::AlignRight);
+    ivaRowLayout->addWidget(lblTotalConIVA, 0, 2, Qt::AlignLeft);
+    ivaRowLayout->addWidget(lblIVAPct, 0, 1, Qt::AlignLeft);
+    
+    totalsRight->addWidget(ivaRowWidget, 1, 0, 1, 2);
+    ivaRowWidget->setVisible(isIVAShown); // Inicialmente 'false'
+
+    // Fila 2: Costo estimado
+    totalsRight->addWidget(new QLabel("Costo estimado:"), 2, 0, Qt::AlignRight);     
+    totalsRight->addWidget(lblCostoEstimado, 2, 1, Qt::AlignLeft);  
+    // Fila 3: Beneficio estimado
+    totalsRight->addWidget(new QLabel("Beneficio estimado:"), 3, 0, Qt::AlignRight);          
+    totalsRight->addWidget(lblBeneficioEstimado, 3, 1, Qt::AlignLeft);
+
+    totalsRight->setContentsMargins(10, 10, 10, 10);
+    
+    // Ensamblar GroupBox Totales
+    totalsHLayout->addLayout(totalsLeft);
+    totalsHLayout->addSpacing(20);
+    totalsHLayout->addLayout(totalsRight);
 
     // --- Ensamblar columna izquierda ---
     leftV->addLayout(formLayout);
@@ -372,10 +434,11 @@ void MainWindow::setupUi()
     auto *rightV = new QVBoxLayout(rightWidget);
 
     lwBudgets = new QListWidget;
-    QPushButton *btnLoad = new QPushButton("Abrir seleccionado");
-    QPushButton *btnDelete = new QPushButton("Eliminar seleccionado");
-    QPushButton *btnClearFields = new QPushButton("Borrar campos");
-    QPushButton *btnCloseProject = new QPushButton("Cerrar obra");
+    QPushButton *btnLoad = new QPushButton("     Abrir     ");
+    QPushButton *btnDelete = new QPushButton("   Eliminar   ");
+    QPushButton *btnClearFields = new QPushButton("  Borrar campos  ");
+    QPushButton *btnCloseProject = new QPushButton("  Cerrar obra  ");
+    QPushButton *btnPrice = new QPushButton("Editar precios base");
     btnCloseProject->setObjectName("btnCloseProject");
 
     // --- Buscador ---
@@ -407,11 +470,15 @@ void MainWindow::setupUi()
     btnsLayout2->addWidget(btnClearFields);
     btnsLayout2->addWidget(btnCloseProject);
 
+    auto *btnsLayout3 = new QHBoxLayout;
+    btnsLayout3->addWidget(btnPrice);
+
     // --- Conexiones columna derecha ---
     connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadSelectedBudget);
     connect(btnDelete, &QPushButton::clicked, this, &MainWindow::onDeleteSelectedBudget);
     connect(btnClearFields, &QPushButton::clicked, this, &MainWindow::onDeleteFields);
     connect(btnCloseProject, &QPushButton::clicked, this, &MainWindow::onToggleStatus);
+    connect(btnPrice, &QPushButton::clicked, this, &MainWindow::onEditBasePrices);
 
     // --- Ensamblar columna derecha ---
     rightV->addWidget(new QLabel("Presupuestos guardados"));
@@ -419,6 +486,7 @@ void MainWindow::setupUi()
     rightV->addWidget(lwBudgets);
     rightV->addLayout(btnsLayout1);
     rightV->addLayout(btnsLayout2);
+    rightV->addLayout(btnsLayout3);
     rightV->addStretch();
     rightWidget->setLayout(rightV);
 
@@ -427,7 +495,7 @@ void MainWindow::setupUi()
     mainSplitter->addWidget(rightWidget);
     mainSplitter->setStretchFactor(0, 3);
     mainSplitter->setStretchFactor(1, 1);
-    mainSplitter->setSizes({900, 300});
+    //mainSplitter->setSizes({900, 300});
 
     // ==================== LAYOUT FINAL ====================
     auto *mainLayout = new QHBoxLayout(central);
@@ -438,13 +506,31 @@ void MainWindow::setupUi()
     setWindowTitle("Australair - Gestor de presupuestos");
     resize(1400, 800);
 
+    // ====================================================
+    // SOLUCIÓN ESCALADO PROPORCIONAL Y TÁCTIL (REFINADO)
+    
+    central->setStyleSheet(R"(
+        QSpinBox, QDoubleSpinBox, QComboBox {
+            min-height: 10px; 
+            padding: 2px; 
+        }
+        
+        QLineEdit {
+            min-height: 10px;
+            padding: 2px;
+        }
+    )");
+
+    //  FIN DE LA SOLUCIÓN TÁCTIL
+    // ====================================================
+
     // ==================== CARGAR DATOS ====================
     refreshBudgetsList();
 
     // ==================== CONEXIONES FINALES ====================
     connect(btnCalc, &QPushButton::clicked, this, &MainWindow::onCalculate);
     connect(btnSave, &QPushButton::clicked, this, &MainWindow::onSaveBudget);
-    connect(btnEditPrices, &QPushButton::clicked, this, &MainWindow::onEditPrices);
+    connect(btnEditPrices, &QPushButton::clicked, this, &MainWindow::onShowMaterialsList);
     connect(btnPDF, &QPushButton::clicked, this, &MainWindow::onExportPDF);
     connect(btnPrint, &QPushButton::clicked, this, &MainWindow::onPrintBudget);
     connect(btnStart, &QPushButton::clicked, this, &MainWindow::onBackToStart);
@@ -480,6 +566,18 @@ void MainWindow::onOpenMaterialsWindow()
     delete mw;
 }
 
+void MainWindow::onShowMaterialsList()
+{
+    // Verificar si hay materiales cargados en la tabla principal
+    if (twMaterials->rowCount() == 0) {
+        QMessageBox::information(this, "Lista de Materiales", "No hay materiales añadidos al presupuesto.");
+        return;
+    }
+    
+    // Si hay materiales, abrir el diálogo de edición
+    showMaterialsListDialog();
+}
+
 double MainWindow::getSettingDouble(const QString &key, double def)
 {
     QSqlQuery q(Database::instance());
@@ -495,12 +593,96 @@ double MainWindow::getSettingDouble(const QString &key, double def)
     return def;
 }
 
-void MainWindow::loadSettings()
+void MainWindow::loadSettings(){}
+
+void MainWindow::showMaterialsListDialog()
 {
-    // nothing to do now, will read when calculating
+    QDialog dialog(this);
+    dialog.setWindowTitle("Editar Materiales del Presupuesto");
+    
+    auto *mainLayout = new QVBoxLayout(&dialog);
+    auto *twEdit = new QTableWidget(0, 4); // Nombre, Cantidad, Precio Venta, Precio Compra
+
+    // Configuración de la tabla del diálogo
+    twEdit->setHorizontalHeaderLabels({"Nombre", "Cantidad", "P. Venta (€)", "P. Compra (€)"});
+    twEdit->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    twEdit->setSelectionBehavior(QAbstractItemView::SelectRows);
+    twEdit->setSelectionMode(QAbstractItemView::SingleSelection);
+    
+    // Deshabilitar la edición de las columnas de Nombre, P. Venta y P. Compra (se modifican al cambiar la cantidad)
+    twEdit->setEditTriggers(QAbstractItemView::AllEditTriggers); // Permitir la edición, luego restringimos por columna
+    
+    // 1. Cargar los materiales de la tabla principal (twMaterials)
+    for (int i = 0; i < twMaterials->rowCount(); ++i) {
+        twEdit->insertRow(i);
+        
+        // Columna 0: Nombre (No editable)
+        QTableWidgetItem *nameItem = new QTableWidgetItem(twMaterials->item(i, 0)->text());
+        nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
+        twEdit->setItem(i, 0, nameItem);
+        
+        // Columna 1: Cantidad (Editable)
+        QTableWidgetItem *qtyItem = new QTableWidgetItem(twMaterials->item(i, 1)->text());
+        qtyItem->setTextAlignment(Qt::AlignCenter);
+        twEdit->setItem(i, 1, qtyItem);
+
+        // Columna 2: Precio Venta (Editable)
+        QTableWidgetItem *pvpItem = new QTableWidgetItem(twMaterials->item(i, 2)->text());
+        twEdit->setItem(i, 2, pvpItem);
+
+        // Columna 3: Precio Compra (Editable)
+        QTableWidgetItem *costItem = new QTableWidgetItem(twMaterials->item(i, 3)->text());
+        twEdit->setItem(i, 3, costItem);
+    }
+
+    // Conexión para recalcular el total de venta en la tabla principal cuando se edita
+    // La columna 1 (Cantidad), Columna 2 (PVP) o Columna 3 (Costo)
+    connect(twEdit, &QTableWidget::cellChanged, this, [=](int row, int column){
+        // Usamos twEdit aquí, no twMaterials, para obtener los datos modificados.
+        if (column == 1 || column == 2 || column == 3) {
+            bool okQty, okPvp, okCost;
+            // Se asume que los datos numéricos son válidos, si no, se usa 0.0
+            int qty = twEdit->item(row, 1)->text().toInt(&okQty);
+            double pvp = twEdit->item(row, 2)->text().toDouble(&okPvp);
+            double cost = twEdit->item(row, 3)->text().toDouble(&okCost);
+
+            if (!okQty || qty < 0) qty = 0;
+            if (!okPvp || pvp < 0.0) pvp = 0.0;
+            if (!okCost || cost < 0.0) cost = 0.0;
+            
+            // Actualizar el total de venta y los datos en la tabla principal (twMaterials)
+            // Se desactiva la señal para evitar bucles infinitos con la celda 4 (Total Venta)
+            twMaterials->blockSignals(true); 
+            twMaterials->item(row, 1)->setText(QString::number(qty));
+            twMaterials->item(row, 2)->setText(QString::number(pvp, 'f', 2));
+            twMaterials->item(row, 3)->setText(QString::number(cost, 'f', 2));
+            twMaterials->item(row, 4)->setText(QString::number(pvp * qty, 'f', 2)); // Total Venta
+            twMaterials->blockSignals(false);
+            
+            // Recalcular el presupuesto
+            onCalculate();
+        }
+    });
+
+    // Botones del diálogo
+    auto *btnAccept = new QPushButton("Aceptar y Cerrar");
+    auto *btnCancel = new QPushButton("Cancelar");
+    
+    connect(btnAccept, &QPushButton::clicked, &dialog, &QDialog::accept);
+    connect(btnCancel, &QPushButton::clicked, &dialog, &QDialog::reject);
+    
+    auto *hLayout = new QHBoxLayout;
+    hLayout->addWidget(btnAccept);
+    hLayout->addWidget(btnCancel);
+
+    mainLayout->addWidget(twEdit);
+    mainLayout->addLayout(hLayout);
+
+    dialog.resize(800, 600);
+    dialog.exec(); // Mostrar el diálogo modal
 }
 
-void MainWindow::onEditPrices()
+/* void MainWindow::onEditBasePrices()
 {
     bool ok;
     double newBase = QInputDialog::getDouble(this, "Precio base", "Precio base (€):", getSettingDouble("price_base", 10.0), 0, 1e9, 2, &ok);
@@ -526,5 +708,142 @@ void MainWindow::onEditPrices()
     q.exec();
 
     QMessageBox::information(this, "Ajustes", "Precios actualizados.");
+} */
+
+void MainWindow::onEditBasePrices()
+{
+    // El antiguo slot ahora simplemente abre el diálogo
+    showEditBasePricesDialog();
 }
 
+// ---------------------- NUEVAS FUNCIONES DE CONTROL ----------------------
+
+void MainWindow::updateTotalsDisplay()
+{
+    // Esta función debe ser llamada al final de onCalculate()
+    // 1. Manejar la visibilidad del IVA
+    ivaRowWidget->setVisible(isIVAShown);
+    
+    // 2. Aquí podrías añadir lógica si los valores base cambian (lo haremos en onCalculate)
+}
+
+void MainWindow::onToggleIVA(bool checked)
+{
+    isIVAShown = checked;
+    QPushButton *btn = qobject_cast<QPushButton*>(sender());
+    if (btn) {
+        btn->setText(checked ? "Ocultar IVA (SÍ)" : "Mostrar IVA (NO)");
+    }
+    updateTotalsDisplay();
+}
+
+void MainWindow::onToggleImprevistos(bool checked)
+{
+    isImprevistosApplied = checked;
+    QPushButton *btn = qobject_cast<QPushButton*>(sender());
+    if (btn) {
+        btn->setText(checked ? "Imprevistos (10% - SÍ)" : "Imprevistos (10% - NO)");
+    }
+    // ¡Es crucial recalcular todo cuando se activa/desactiva el Imprevisto!
+    onCalculate();
+}
+
+void MainWindow::showEditBasePricesDialog()
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle("Editar Precios Base y Configuraciones");
+    
+    auto *mainLayout = new QFormLayout(&dialog);
+    
+    // ====================================================
+    // 1. TARIFAS Y CARGOS GENERALES
+    // ====================================================
+    
+    // --- Precios de Mano de Obra (Venta) ---
+    auto *sbPriceBase = new QDoubleSpinBox; 
+    sbPriceBase->setRange(0, 1e9); sbPriceBase->setDecimals(2);
+    sbPriceBase->setValue(getSettingDouble("price_base", 80.0)); // Precio/Hora VENTA
+    mainLayout->addRow("1. Precio/Hora Mano Obra VENTA (€):", sbPriceBase);
+
+    auto *sbIncrement = new QDoubleSpinBox; 
+    sbIncrement->setRange(0, 1e9); sbIncrement->setDecimals(2);
+    sbIncrement->setValue(getSettingDouble("increment_per_field", 5.0));
+    mainLayout->addRow("2. Incremento por campo (€):", sbIncrement);
+
+    // --- Precio VENTA de Dieta ---
+    auto *sbDietaPrice = new QDoubleSpinBox;
+    sbDietaPrice->setRange(0, 1e4); sbDietaPrice->setDecimals(2);
+    sbDietaPrice->setValue(getSettingDouble("dieta_price", 150.0)); // Precio VENTA Dieta
+    mainLayout->addRow("3. Precio VENTA Dieta/Día (€):", sbDietaPrice);
+    
+    // --- Precio Litro Combustible (Venta) ---
+    auto *sbFuelPrice = new QDoubleSpinBox;
+    sbFuelPrice->setRange(0, 10); sbFuelPrice->setDecimals(3);
+    sbFuelPrice->setValue(getSettingDouble("fuel_liter_price", 1.80)); 
+    mainLayout->addRow("4. Precio Combustible (€/Litro):", sbFuelPrice);
+    
+    // ====================================================
+    // 2. COSTOS REALES ESTIMADOS
+    // ====================================================
+
+    // --- Costo Real de Mano de Obra ---
+    auto *sbCostPerHour = new QDoubleSpinBox;
+    sbCostPerHour->setRange(0, 1e4); sbCostPerHour->setDecimals(2);
+    sbCostPerHour->setValue(getSettingDouble("cost_per_hour", 25.0)); 
+    mainLayout->addRow("5. Costo Real/Hora (€):", sbCostPerHour);
+
+    // --- Costo Real de Dieta ---
+    auto *sbCostPerDieta = new QDoubleSpinBox;
+    sbCostPerDieta->setRange(0, 1e4); sbCostPerDieta->setDecimals(2);
+    sbCostPerDieta->setValue(getSettingDouble("cost_per_dieta", 25.0)); 
+    mainLayout->addRow("6. Costo Real Dieta/Día (€):", sbCostPerDieta);
+    
+    // --- NUEVO: Costo Real Diario Furgoneta ---
+    auto *sbCostVanDay = new QDoubleSpinBox;
+    sbCostVanDay->setRange(0, 1e4); sbCostVanDay->setDecimals(2);
+    sbCostVanDay->setValue(getSettingDouble("cost_van_day", 45.0)); 
+    mainLayout->addRow("7. Costo Real Furgoneta/Día (€):", sbCostVanDay);
+
+    // ====================================================
+    // 3. IVA
+    // ====================================================
+    auto *sbIVA = new QDoubleSpinBox; 
+    sbIVA->setRange(0, 100); sbIVA->setDecimals(2);
+    sbIVA->setValue(getSettingDouble("iva_pct", 21.0));
+    mainLayout->addRow("8. IVA Porcentaje (%):", sbIVA);
+    
+    // --- Botones de acción ---
+    auto *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    mainLayout->addWidget(buttonBox);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        // Guardar los nuevos valores en la base de datos
+        QSqlQuery q(Database::instance());
+        q.prepare("REPLACE INTO settings(key,value) VALUES(?,?)");
+        
+        auto saveSetting = [&](const QString &key, double value) {
+            q.addBindValue(key);
+            q.addBindValue(QString::number(value, 'f', 3));
+            q.exec();
+        };
+
+        // 1. Venta
+        saveSetting("price_base", sbPriceBase->value());
+        saveSetting("increment_per_field", sbIncrement->value());
+        saveSetting("dieta_price", sbDietaPrice->value());
+        saveSetting("fuel_liter_price", sbFuelPrice->value());
+        
+        // 2. Costo
+        saveSetting("cost_per_hour", sbCostPerHour->value());
+        saveSetting("cost_per_dieta", sbCostPerDieta->value());
+        saveSetting("cost_van_day", sbCostVanDay->value()); // ¡Nuevo!
+
+        // 3. IVA
+        saveSetting("iva_pct", sbIVA->value());
+
+        QMessageBox::information(this, "Ajustes", "Precios base actualizados. Recalculando presupuesto.");
+        onCalculate();
+    }
+}

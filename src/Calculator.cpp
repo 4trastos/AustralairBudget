@@ -3,7 +3,7 @@
 #include "AustralairBudget.hpp"
 #include "MaterialsWindow.hpp"
 
-void MainWindow::onCalculate()
+/* void MainWindow::onCalculate()
 {
     // --- Cargar precios desde archivo ---
     QMap<QString, double> prices = loadPricesFromFile(QCoreApplication::applicationDirPath() + "/prices.txt");
@@ -73,6 +73,114 @@ void MainWindow::onCalculate()
     } else {
         lblBeneficioEstimado->setStyleSheet("color: red; font-weight: bold;");
     }
+} */
+
+void MainWindow::onCalculate()
+{
+    // 1. Cargar precios desde la Base de Datos (settings)
+    double ivaPct = getSettingDouble("iva_pct", 21.0);
+    double fuelPriceLiter = getSettingDouble("fuel_liter_price", 1.80);
+    double horaPrice = getSettingDouble("price_base", 80.0); // Precio de VENTA de la hora
+    double dietaPrice = getSettingDouble("dieta_price", 150.0); // Precio de VENTA de la dieta
+
+    // 2. Inicializar totales de venta y costo (basado en onCalculate/calculateCostsAndBenefits)
+    double totalNoImprevistos = 0.0; // Total de venta sin el 10%
+    double totalCost = 0.0;          // Costo total real (calculado a continuación)
+
+    // --- Sumar materiales (La venta y el costo se calculan aquí directamente para simplificar el flujo) ---
+    for (int r = 0; r < twMaterials->rowCount(); ++r)
+    {
+        QTableWidgetItem *qtyItem = twMaterials->item(r, 1);
+        QTableWidgetItem *priceSellItem = twMaterials->item(r, 2); // Precio Venta
+        QTableWidgetItem *priceCostItem = twMaterials->item(r, 3); // Precio Compra/Costo
+        QTableWidgetItem *totalSellItem = twMaterials->item(r, 4); // Total Venta
+
+        double qty = qtyItem ? qtyItem->text().toDouble() : 0.0;
+        double priceSell = priceSellItem ? priceSellItem->text().toDouble() : 0.0;
+        double priceCost = priceCostItem ? priceCostItem->text().toDouble() : 0.0;
+
+        double lineSell = qty * priceSell;
+        
+        if (totalSellItem)
+            totalSellItem->setText(QString::number(lineSell, 'f', 2));
+        
+        // Sumar a la VENTA SIN imprevistos
+        totalNoImprevistos += lineSell;
+        
+        // Sumar al COSTO total
+        totalCost += qty * priceCost;
+    }
+
+    // --- Costos Operacionales (Venta y Costo) ---
+    
+    // Combustible
+    double litrosConsumidos = sbLitros->value();
+    totalNoImprevistos += litrosConsumidos * fuelPriceLiter; // Venta: basado en precio/litro
+    totalCost += litrosConsumidos * fuelPriceLiter;          // Costo: asumimos que el coste es igual al precio de venta del litro
+
+    // Dietas
+    int numDietas = spDietas->value() * spDiasDieta->value();
+    double costPerDieta = getSettingDouble("cost_per_dieta", 25.0); // Costo estimado de dieta (Nuevo setting)
+    totalNoImprevistos += numDietas * dietaPrice; // Venta: basado en precio de dieta
+    totalCost += numDietas * costPerDieta;        // Costo: basado en costo de dieta
+
+    // Horas de trabajo (Venta)
+    double horasBase = sbHoras->value();
+    double horasIncremento = 0.0;
+    if (cbZona->currentText() == "Zona Centro") {
+        if (rbCorta->isChecked()) horasIncremento = 0.30 * 2;
+        else if (rbMedia->isChecked()) horasIncremento = 1.0 * 2;
+        else if (rbLarga->isChecked()) horasIncremento = 1.5 * 2;
+    }
+    double horasTotales = horasBase + horasIncremento;
+    totalNoImprevistos += horasTotales * horaPrice; // Venta: basado en precio/hora
+
+    // Horas de trabajo (Costo)
+    double costPerHour = getSettingDouble("cost_per_hour", 25.0); // Costo estimado de mano de obra (Nuevo setting)
+    totalCost += sbHoras->value() * costPerHour; // Solo se considera el costo de horasBase, no de desplazamiento.
+
+    // Furgonetas
+    int numFurgonetas = spFurgonetas->value();
+    double costVanDay = getSettingDouble("cost_van_day", 45.0);
+    
+    if (numFurgonetas > 0 && spDias->value() > 0) {
+        // Venta: SE ELIMINA LA LÍNEA DE VENTA. La furgoneta ya no se cobra al cliente.
+        // totalNoImprevistos += numFurgonetas * precioVentaFurgo * spDias->value(); // ¡ELIMINADA!
+
+        // Costo: Se calcula el costo real por día de furgoneta * días de obra.
+        totalCost += numFurgonetas * costVanDay * spDias->value();
+    }
+
+    // ====================================================
+    // 3. APLICACIÓN DE IMPREVISTOS
+    double totalFinal = totalNoImprevistos;
+    if (isImprevistosApplied) {
+        totalFinal *= 1.10;
+    }
+    // ====================================================
+
+    // 4. Calcular el Beneficio (Precio Final - Costo Total)
+    double estimatedBenefit = totalFinal - totalCost;
+
+    // 5. Total con IVA
+    lblIVAPct->setText(QString("(%1%)").arg(QString::number(ivaPct, 'f', 2)));
+    double totalConIva = totalFinal * (1.0 + ivaPct / 100.0);
+    
+    // 6. Actualizar Etiquetas
+    lblTotalNoIVA->setText(QString::number(totalFinal, 'f', 2) + " €");
+    lblTotalConIVA->setText(QString::number(totalConIva, 'f', 2) + " €");
+    lblCostoEstimado->setText(QString::number(totalCost, 'f', 2) + " €");
+    lblBeneficioEstimado->setText(QString::number(estimatedBenefit, 'f', 2) + " €");
+
+    // Colorear beneficio
+    if (estimatedBenefit >= 0) {
+        lblBeneficioEstimado->setStyleSheet("color: green; font-weight: bold;");
+    } else {
+        lblBeneficioEstimado->setStyleSheet("color: red; font-weight: bold;");
+    }
+    
+    // 7. Actualizar la visualización del IVA
+    updateTotalsDisplay();
 }
 
 void MainWindow::calculateCostsAndBenefits(double &totalSelling, double &totalCost, double &estimatedBenefit)

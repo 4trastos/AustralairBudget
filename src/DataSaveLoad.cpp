@@ -39,9 +39,9 @@ void MainWindow::onSaveBudget()
     qb.prepare(R"(
         INSERT INTO budgets(
             client_id, tipo_local, metros, tipo_cubierta, extraccion, elevador, portes, dias_elevador, 
-            precio_dia, zona, dietas, dias_dieta, precio_dieta, furgonetas, km, combustible, operarios, dias_trabajo, 
+            precio_dia, zona, dietas, dias_dieta, precio_dieta, furgonetas, coste_furgonetas, km, combustible, operarios, dias_trabajo, 
             horas, horas_viaje, base_price, total_no_iva, total_con_iva
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     )");
 
     qb.addBindValue(clientId);                        // client_id
@@ -58,7 +58,8 @@ void MainWindow::onSaveBudget()
     qb.addBindValue(spDiasDieta->value());          // dias_dieta
     qb.addBindValue(spPrecioDiet->value());         // Precio dieta X día
     //qb.addBindValue(leLocalidadObra ? leLocalidadObra->text() : QString()); // localidad
-    qb.addBindValue(spFurgonetas->value());
+    qb.addBindValue(spFurgonetas->value());         // Furgonetas
+    qb.addBindValue(sbCosteFurgo->value());         // Coste Furgonetas
     qb.addBindValue(sbKM->value());                  // km
     qb.addBindValue(sbLitros->value());             // combustible
     qb.addBindValue(spOperarios->value());          // operarios
@@ -133,7 +134,7 @@ void MainWindow::onLoadSelectedBudget()
     // 2️⃣ Cargar datos del presupuesto - CONSULTA CORREGIDA
     QSqlQuery query(Database::instance());
     query.prepare("SELECT client_id, tipo_local, metros, tipo_cubierta, extraccion, elevador, portes, "
-                  "dias_elevador, precio_dia, zona, dietas, dias_dieta, precio_dieta, furgonetas, km, combustible, "
+                  "dias_elevador, precio_dia, zona, dietas, dias_dieta, precio_dieta, furgonetas, coste_furgonetas, km, combustible, "
                   "operarios, dias_trabajo, horas, horas_viaje, base_price, total_no_iva, total_con_iva "
                   "FROM budgets WHERE id = ?");
     query.addBindValue(budgetId);
@@ -165,18 +166,19 @@ void MainWindow::onLoadSelectedBudget()
     spDiasDieta->setValue(query.value(11).toInt());
     spPrecioDiet->setValue(query.value(12).toInt());
     spFurgonetas->setValue(query.value(13).toInt());
+    sbCosteFurgo->setValue(query.value(14).toInt());
     
     // Localidad
     QLineEdit *leLocalidad = findChild<QLineEdit*>("leLocalidadObra");
     if (leLocalidad) 
-        leLocalidad->setText(query.value(14).toString());
+        leLocalidad->setText(query.value(15).toString());
     
-    sbKM->setValue(query.value(15).toDouble());
-    sbLitros->setValue(query.value(16).toDouble());
-    spOperarios->setValue(query.value(17).toInt());
-    spDias->setValue(query.value(18).toInt());
-    sbHoras->setValue(query.value(19).toDouble());
-    sbHorasViaje->setValue(query.value(20).toDouble());
+    sbKM->setValue(query.value(16).toDouble());
+    sbLitros->setValue(query.value(17).toDouble());
+    spOperarios->setValue(query.value(18).toInt());
+    spDias->setValue(query.value(19).toInt());
+    sbHoras->setValue(query.value(20).toDouble());
+    sbHorasViaje->setValue(query.value(21).toDouble());
 
     qDebug() << "Presupuesto cargado - Client ID:" << clientId 
              << "Operarios:" << query.value(22).toInt()
