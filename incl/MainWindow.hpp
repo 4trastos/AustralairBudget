@@ -70,6 +70,8 @@ private:
     void showEditBasePricesDialog(); // Nueva función auxiliar para el diálogo
     void updateTotalsDisplay();
 
+    MaterialsWindow *materialsManager = nullptr;
+
 
     // --- Variables de estado ----
     int currentBudgetId = 0;
@@ -79,8 +81,8 @@ private:
     
     // --- Widgets----
     QLineEdit *leClientName, *leCompany, *leContact, *leAddress, *lePhone, *leEmail, *leCIF, *leNumPresu, *leLocalidadObra, *leFecha, *leExtra;
-    QDoubleSpinBox *sbMetros, *sbKM, *sbHoras, *sbLitros, *sbElevPortes, *sbHorasViaje, *sbCosteFurgo;
-    QSpinBox *spDietas, *spDias, *spDiasDieta, *spElevDia, *spOperarios, *spElevPrecDia, *spPrecioDiet, *spFurgonetas;
+    QDoubleSpinBox *sbMetros, *sbKM, *sbHoras, *sbLitros, *sbElevPortes, *sbHorasViaje, *sbCosteFurgo, *sbPrecioDiet;
+    QSpinBox *spDietas, *spDias, *spDiasDieta, *spElevDia, *spOperarios, *spElevPrecDia, *spFurgonetas;
     QComboBox *cbTipoLocal, *cbTipoCubierta, *cbZona, *cbDietasNo, *cbDietasYes, *cbMaterials, *cbElevador, *cbExtractor;
     QTableWidget *twMaterials;
     QPushButton *btnAddMat, *btnRemoveMat, *btnCalc, *btnSave, *btnPDF, *btnPrint, *btnDelFields, *btnToggleStatus, *btnNewBudget, *btnStart, *btnPrice;

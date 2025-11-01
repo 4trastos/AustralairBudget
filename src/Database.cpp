@@ -97,7 +97,7 @@ void Database::ensureSchema() {
 
     // defaults: price_base=10, increment_per_field=5, iva=21
     q.prepare("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)");
-    q.addBindValue("price_base"); q.addBindValue("10"); q.exec();
+    q.addBindValue("price_base"); q.addBindValue("80"); q.exec();
     q.addBindValue("increment_per_field"); q.addBindValue("5"); q.exec();
     q.addBindValue("iva_pct"); q.addBindValue("21"); q.exec();
 }

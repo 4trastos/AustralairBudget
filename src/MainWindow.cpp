@@ -91,9 +91,14 @@ void MainWindow::setupUi()
     spOperarios = new QSpinBox; spOperarios->setRange(0,60);
     cbExtractor = new QComboBox; cbExtractor->addItems({"No", "Si"});
     sbHorasViaje = new QDoubleSpinBox; sbHorasViaje->setRange(0,1e5);
-    spPrecioDiet = new QSpinBox; spPrecioDiet->setRange(0,1000);
     spFurgonetas = new QSpinBox; spFurgonetas->setRange(0,100);
+    
     sbCosteFurgo = new QDoubleSpinBox; sbCosteFurgo->setRange(0, 1e6); sbCosteFurgo->setSuffix(" €");
+    sbCosteFurgo->setValue(getSettingDouble("cost_van_day", 95.0));
+    sbCosteFurgo->setEnabled(false);
+    sbPrecioDiet = new QDoubleSpinBox; sbPrecioDiet->setRange(0,1e6); sbPrecioDiet->setSuffix(" €");
+    sbPrecioDiet->setValue(getSettingDouble("dieta_price", 150.0));
+    sbPrecioDiet->setEnabled(false);
 
     cbElevador = new QComboBox; cbElevador->addItems({"No","Si"});
     sbElevPortes = new QDoubleSpinBox; sbElevPortes->setRange(0, 1e6); sbElevPortes->setSuffix(" €");
@@ -149,7 +154,7 @@ void MainWindow::setupUi()
     obraZonaLayout->addWidget(new QLabel("Días:"), 3, 4);
     obraZonaLayout->addWidget(spDiasDieta, 3, 5);
     obraZonaLayout->addWidget(new QLabel("Precio X Día:"), 3, 6);
-    obraZonaLayout->addWidget(spPrecioDiet, 3, 7);
+    obraZonaLayout->addWidget(sbPrecioDiet, 3, 7);
 
     // --- FILA 5: Furgonetas y combustible ---
     obraZonaLayout->addWidget(new QLabel("Furgonetas:"), 4, 0);
@@ -284,6 +289,12 @@ void MainWindow::setupUi()
         double costPrice = QInputDialog::getDouble(this, "Nuevo material manual", "Precio de COMPRA (costo real):", sellPrice * 0.7, 0, 1e6, 2, &ok);
         if (!ok) return;
 
+        if (!materialsManager) {
+            materialsManager = new MaterialsWindow(this);
+        }
+
+        materialsManager->addMaterialToMasterList("OTROS", materialName, sellPrice, costPrice);
+
         int row = twMaterials->rowCount();
         twMaterials->insertRow(row);
         twMaterials->setItem(row, 0, new QTableWidgetItem(materialName));
@@ -291,6 +302,8 @@ void MainWindow::setupUi()
         twMaterials->setItem(row, 2, new QTableWidgetItem(QString::number(sellPrice, 'f', 2)));
         twMaterials->setItem(row, 3, new QTableWidgetItem(QString::number(costPrice, 'f', 2)));
         twMaterials->setItem(row, 4, new QTableWidgetItem(QString::number(sellPrice, 'f', 2)));
+
+        onCalculate();
     });
 
     connect(twMaterials, &QTableWidget::cellChanged, this, [this](int row, int column) {
@@ -321,7 +334,7 @@ void MainWindow::setupUi()
     auto *colLeft = new QVBoxLayout;
     auto *colRight = new QVBoxLayout;
     
-    btnCalc = new QPushButton("Calcular");
+    btnCalc = new QPushButton("Recalcular");
     btnSave = new QPushButton("Guardar presupuesto");
     btnPDF = new QPushButton("Guardar en PDF");
     btnPrint = new QPushButton("Imprimir presupuesto");
@@ -365,22 +378,6 @@ void MainWindow::setupUi()
     totalsLeft->addWidget(btnToggleIVA);
     totalsLeft->addWidget(btnToggleImprevistos);
     totalsLeft->addStretch();
-    
-    /* lblTotalNoIVA = new QLabel("0.00 €");
-    lblTotalConIVA = new QLabel("0.00 €");
-    lblCostoEstimado = new QLabel("0.00 €");   
-    lblBeneficioEstimado = new QLabel("0.00 €");
-
-    totalsLayout->addWidget(new QLabel("Total sin IVA:"), 0, 0, Qt::AlignRight);
-    totalsLayout->addWidget(lblTotalNoIVA, 0, 1, Qt::AlignLeft);
-    totalsLayout->addWidget(new QLabel("Total con IVA (21%):"), 1, 0, Qt::AlignRight);
-    totalsLayout->addWidget(lblTotalConIVA, 1, 1, Qt::AlignLeft);
-    totalsLayout->addWidget(new QLabel("Costo estimado:"), 2, 0, Qt::AlignRight);     
-    totalsLayout->addWidget(lblCostoEstimado, 2, 1, Qt::AlignLeft);  
-    totalsLayout->addWidget(new QLabel("Beneficio estimado:"), 3, 0, Qt::AlignRight);          
-    totalsLayout->addWidget(lblBeneficioEstimado, 3, 1, Qt::AlignLeft);
-
-    totalsLayout->setContentsMargins(10, 10, 10, 10); */
 
     // ---------------------- Columna Derecha de Totales (Valores) ----------------------
     auto *totalsRight = new QGridLayout;
@@ -534,12 +531,65 @@ void MainWindow::setupUi()
     connect(btnPDF, &QPushButton::clicked, this, &MainWindow::onExportPDF);
     connect(btnPrint, &QPushButton::clicked, this, &MainWindow::onPrintBudget);
     connect(btnStart, &QPushButton::clicked, this, &MainWindow::onBackToStart);
+
+    // ==================== CONEXIONES DE RECALCULO AUTOMÁTICO ====================
+    
+    // CAMPOS DE OBRA
+    connect(sbMetros, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(cbTipoLocal, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    connect(cbTipoCubierta, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    
+    // DESPLAZAMIENTO Y COMBUSTIBLE
+    connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(sbLitros, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+
+    // TIEMPOS
+    connect(sbHoras, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(sbHorasViaje, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate); // ¡Crucial!
+    connect(spDias, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(spOperarios, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    
+    // EXTRAS (EXTRACTOR, FURGONETAS)
+    connect(cbExtractor, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    connect(spFurgonetas, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(sbCosteFurgo, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+
+    // EXTRAS (ELEVACIÓN)
+    connect(cbElevador, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    connect(sbElevPortes, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(spElevDia, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(spElevPrecDia, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    
+    // EXTRAS (ZONA, DISTANCIA Y DIETAS)
+    connect(cbZona, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    connect(rbCorta, &QRadioButton::toggled, this, &MainWindow::onCalculate);
+    connect(rbMedia, &QRadioButton::toggled, this, &MainWindow::onCalculate);
+    connect(rbLarga, &QRadioButton::toggled, this, &MainWindow::onCalculate);
+    connect(cbDietasYes, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    connect(spDietas, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(spDiasDieta, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(sbPrecioDiet, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    
+    // TABLA DE MATERIALES (Añadir conexión para Precio Venta/Compra)
+    // Actualmente solo tienes la cantidad (columna 1). Debes añadir Precio Venta y Precio Compra.
+    connect(twMaterials, &QTableWidget::cellChanged, this, [this](int row, int column) {
+        // Columna 1=Cantidad, 2=Precio Venta, 3=Precio Compra
+        if (column == 1 || column == 2 || column == 3) { 
+            updateMaterialTotal(row); // Esta función debe llamar internamente a onCalculate
+        }
+    });
+
+    // ====================================================
 }
 
 void MainWindow::onOpenMaterialsWindow()
 {
     // Crear la ventana de materiales
     MaterialsWindow *mw = new MaterialsWindow(this);
+
+    if (!materialsManager) {
+        materialsManager = new MaterialsWindow(this);
+    }
     
     // Mostrar la ventana modal. Si el usuario hace clic en "Guardar Selección y Cerrar" (accept)...
     if (mw->exec() == QDialog::Accepted) {
@@ -682,33 +732,6 @@ void MainWindow::showMaterialsListDialog()
     dialog.exec(); // Mostrar el diálogo modal
 }
 
-/* void MainWindow::onEditBasePrices()
-{
-    bool ok;
-    double newBase = QInputDialog::getDouble(this, "Precio base", "Precio base (€):", getSettingDouble("price_base", 10.0), 0, 1e9, 2, &ok);
-    if (!ok)
-        return;
-    double newInc = QInputDialog::getDouble(this, "Incremento por apartado", "Incremento (€):", getSettingDouble("increment_per_field", 5.0), 0, 1e9, 2, &ok);
-    if (!ok)
-        return;
-    double newIva = QInputDialog::getDouble(this, "IVA (%)", "IVA porcentaje:", getSettingDouble("iva_pct", 21.0), 0, 100, 2, &ok);
-    if (!ok)
-        return;
-
-    QSqlQuery q(Database::instance());
-    q.prepare("REPLACE INTO settings(key,value) VALUES(?,?)");
-    q.addBindValue("price_base");
-    q.addBindValue(QString::number(newBase));
-    q.exec();
-    q.addBindValue("increment_per_field");
-    q.addBindValue(QString::number(newInc));
-    q.exec();
-    q.addBindValue("iva_pct");
-    q.addBindValue(QString::number(newIva));
-    q.exec();
-
-    QMessageBox::information(this, "Ajustes", "Precios actualizados.");
-} */
 
 void MainWindow::onEditBasePrices()
 {
@@ -754,58 +777,50 @@ void MainWindow::showEditBasePricesDialog()
     dialog.setWindowTitle("Editar Precios Base y Configuraciones");
     
     auto *mainLayout = new QFormLayout(&dialog);
-    
-    // ====================================================
-    // 1. TARIFAS Y CARGOS GENERALES
-    // ====================================================
-    
-    // --- Precios de Mano de Obra (Venta) ---
-    auto *sbPriceBase = new QDoubleSpinBox; 
-    sbPriceBase->setRange(0, 1e9); sbPriceBase->setDecimals(2);
-    sbPriceBase->setValue(getSettingDouble("price_base", 80.0)); // Precio/Hora VENTA
-    mainLayout->addRow("1. Precio/Hora Mano Obra VENTA (€):", sbPriceBase);
-
-    auto *sbIncrement = new QDoubleSpinBox; 
-    sbIncrement->setRange(0, 1e9); sbIncrement->setDecimals(2);
-    sbIncrement->setValue(getSettingDouble("increment_per_field", 5.0));
-    mainLayout->addRow("2. Incremento por campo (€):", sbIncrement);
 
     // --- Precio VENTA de Dieta ---
     auto *sbDietaPrice = new QDoubleSpinBox;
     sbDietaPrice->setRange(0, 1e4); sbDietaPrice->setDecimals(2);
     sbDietaPrice->setValue(getSettingDouble("dieta_price", 150.0)); // Precio VENTA Dieta
-    mainLayout->addRow("3. Precio VENTA Dieta/Día (€):", sbDietaPrice);
+    mainLayout->addRow("1. DIETAS -> Día (€):", sbDietaPrice);
+
+    // --- Costo Real de Dieta ---
+    auto *sbCostPerDieta = new QDoubleSpinBox;
+    sbCostPerDieta->setRange(0, 1e4); sbCostPerDieta->setDecimals(2);
+    sbCostPerDieta->setValue(getSettingDouble("cost_per_dieta", 150.0)); 
+    mainLayout->addRow("2. DIETAS (coste) -> Día (€):", sbCostPerDieta);
     
     // --- Precio Litro Combustible (Venta) ---
     auto *sbFuelPrice = new QDoubleSpinBox;
     sbFuelPrice->setRange(0, 10); sbFuelPrice->setDecimals(3);
     sbFuelPrice->setValue(getSettingDouble("fuel_liter_price", 1.80)); 
-    mainLayout->addRow("4. Precio Combustible (€/Litro):", sbFuelPrice);
-    
-    // ====================================================
-    // 2. COSTOS REALES ESTIMADOS
-    // ====================================================
+    mainLayout->addRow("3. Precio Combustible (€/Litro):", sbFuelPrice);
 
     // --- Costo Real de Mano de Obra ---
+    auto *sbPriceBase = new QDoubleSpinBox; 
+    sbPriceBase->setRange(0, 1e9); sbPriceBase->setDecimals(2);
+    sbPriceBase->setValue(getSettingDouble("price_base", 80.0)); // Precio/Hora VENTA
+    mainLayout->addRow("4. MANO DE OBRA -> Hora Trabajada (€):", sbPriceBase);
+
     auto *sbCostPerHour = new QDoubleSpinBox;
     sbCostPerHour->setRange(0, 1e4); sbCostPerHour->setDecimals(2);
-    sbCostPerHour->setValue(getSettingDouble("cost_per_hour", 25.0)); 
-    mainLayout->addRow("5. Costo Real/Hora (€):", sbCostPerHour);
+    sbCostPerHour->setValue(getSettingDouble("cost_per_hour", 65.0)); 
+    mainLayout->addRow("5. MANO DE OBRA (Coste) -> Hora Trabajada (€):", sbCostPerHour);
 
-    // --- Costo Real de Dieta ---
-    auto *sbCostPerDieta = new QDoubleSpinBox;
-    sbCostPerDieta->setRange(0, 1e4); sbCostPerDieta->setDecimals(2);
-    sbCostPerDieta->setValue(getSettingDouble("cost_per_dieta", 25.0)); 
-    mainLayout->addRow("6. Costo Real Dieta/Día (€):", sbCostPerDieta);
+    // --- Costo Real/Hora de Viaje (Punto 3: Fijo 65.0) ---
+    auto *sbCostHourViaje = new QDoubleSpinBox;
+    sbCostHourViaje->setRange(0, 1e4); sbCostHourViaje->setDecimals(2);
+    sbCostHourViaje->setValue(getSettingDouble("cost_hour_viaje", 80.0)); 
+    mainLayout->addRow("6. MANO DE OBRA -> Hora Viaje (€):", sbCostHourViaje);
     
     // --- NUEVO: Costo Real Diario Furgoneta ---
     auto *sbCostVanDay = new QDoubleSpinBox;
     sbCostVanDay->setRange(0, 1e4); sbCostVanDay->setDecimals(2);
-    sbCostVanDay->setValue(getSettingDouble("cost_van_day", 45.0)); 
-    mainLayout->addRow("7. Costo Real Furgoneta/Día (€):", sbCostVanDay);
+    sbCostVanDay->setValue(getSettingDouble("cost_van_day", 95.0)); 
+    mainLayout->addRow("7. FURGONETA -> Día (€):", sbCostVanDay);
 
     // ====================================================
-    // 3. IVA
+    // IVA
     // ====================================================
     auto *sbIVA = new QDoubleSpinBox; 
     sbIVA->setRange(0, 100); sbIVA->setDecimals(2);
@@ -831,7 +846,7 @@ void MainWindow::showEditBasePricesDialog()
 
         // 1. Venta
         saveSetting("price_base", sbPriceBase->value());
-        saveSetting("increment_per_field", sbIncrement->value());
+        //saveSetting("increment_per_field", sbIncrement->value());
         saveSetting("dieta_price", sbDietaPrice->value());
         saveSetting("fuel_liter_price", sbFuelPrice->value());
         

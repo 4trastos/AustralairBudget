@@ -3,78 +3,6 @@
 #include "AustralairBudget.hpp"
 #include "MaterialsWindow.hpp"
 
-/* void MainWindow::onCalculate()
-{
-    // --- Cargar precios desde archivo ---
-    QMap<QString, double> prices = loadPricesFromFile(QCoreApplication::applicationDirPath() + "/prices.txt");
-    double iva = getSettingDouble("iva_pct", 21.0);
-
-    double total = 0.0;
-
-    // --- Sumar materiales (COLUMNAS MODIFICADAS) ---
-    for (int r = 0; r < twMaterials->rowCount(); ++r)
-    {
-        QTableWidgetItem *qtyItem = twMaterials->item(r, 1);    // Columna 1: Cantidad
-        QTableWidgetItem *priceItem = twMaterials->item(r, 2);  // Columna 2: Precio Venta
-        QTableWidgetItem *totalItem = twMaterials->item(r, 4);  // Columna 4: Total Venta
-
-        double qty = qtyItem ? qtyItem->text().toDouble() : 0.0;
-        double up = priceItem ? priceItem->text().toDouble() : 0.0;
-        double line = qty * up;
-
-        if (totalItem)
-            totalItem->setText(QString::number(line, 'f', 2));
-        total += line;
-    }
-
-    // --- Coste combustible ---
-    double fuelPrice = prices.value("fuel", 1.4);  // €/litro
-    double litrosConsumidos = sbKM->value() * 0.1; // 10 L/100 km
-    total += litrosConsumidos * fuelPrice;
-
-    // --- Dietas ---
-    double dietaPrice = prices.value("dieta", 150);
-    total += spDietas->value() * spDiasDieta->value() * dietaPrice;
-
-    // --- Horas de trabajo CON INCREMENTOS POR DISTANCIA ---
-    double horaPrice = prices.value("hora_trabajo", 80);
-    double horasBase = sbHoras->value();
-    double horasIncremento = 0.0;
-
-    // Aplicar incrementos solo si está en "Zona Centro" y hay una distancia seleccionada
-    if (cbZona->currentText() == "Zona Centro") {
-        if (rbCorta->isChecked()) {
-            horasIncremento = 0.30 * 2; // 0.30 horas x 2 (ida y vuelta)
-        } else if (rbMedia->isChecked()) {
-            horasIncremento = 1.0 * 2;  // 1.0 hora x 2 (ida y vuelta)
-        } else if (rbLarga->isChecked()) {
-            horasIncremento = 1.5 * 2;  // 1.5 horas x 2 (ida y vuelta)
-        }
-    }
-
-    double horasTotales = horasBase + horasIncremento;
-    total += horasTotales * horaPrice;
-
-    // --- Total con IVA ---
-    double totalConIva = total * (1.0 + iva / 100.0);
-    lblTotalNoIVA->setText(QString::number(total, 'f', 2) + " €");
-    lblTotalConIVA->setText(QString::number(totalConIva, 'f', 2) + " €");
-    
-    // --- CALCULAR Y MOSTRAR BENEFICIOS ---
-    double totalSelling, totalCost, estimatedBenefit;
-    calculateCostsAndBenefits(totalSelling, totalCost, estimatedBenefit);
-
-    lblCostoEstimado->setText(QString::number(totalCost, 'f', 2) + " €");
-    lblBeneficioEstimado->setText(QString::number(estimatedBenefit, 'f', 2) + " €");
-
-    // Colorear beneficio
-    if (estimatedBenefit >= 0) {
-        lblBeneficioEstimado->setStyleSheet("color: green; font-weight: bold;");
-    } else {
-        lblBeneficioEstimado->setStyleSheet("color: red; font-weight: bold;");
-    }
-} */
-
 void MainWindow::onCalculate()
 {
     // 1. Cargar precios desde la Base de Datos (settings)
@@ -111,6 +39,25 @@ void MainWindow::onCalculate()
         totalCost += qty * priceCost;
     }
 
+    // --- Elevación (Venta y Costo) ---
+    if (cbElevador->currentText() == "Si") {
+        // Venta (Cobramos al cliente: Portes + (Días * Precio x Día))
+        double elevPortes = sbElevPortes->value();
+        int elevDias = spElevDia->value();
+        int elevPrecioDia = spElevPrecDia->value();
+        
+        double ventaElevacion = elevPortes + (elevDias * elevPrecioDia);
+        totalNoImprevistos += ventaElevacion;
+
+        // Costo (Asumimos que el costo real es solo el coste administrativo de los portes 
+        // más un costo fijo por día, ya que el precio/día es VENTA)
+        double costElevacionPortes = getSettingDouble("cost_elevacion_portes", elevPortes); // Asumimos que el costo es similar al porte
+        double costElevacionDia = getSettingDouble("cost_elevacion_dia", 5.0); // Nuevo setting: Coste interno de gestionar la elevación por día
+
+        totalCost += costElevacionPortes;
+        totalCost += elevDias * costElevacionDia; 
+    }
+
     // --- Costos Operacionales (Venta y Costo) ---
     
     // Combustible
@@ -119,29 +66,57 @@ void MainWindow::onCalculate()
     totalCost += litrosConsumidos * fuelPriceLiter;          // Costo: asumimos que el coste es igual al precio de venta del litro
 
     // Dietas
-    int numDietas = spDietas->value() * spDiasDieta->value();
-    double costPerDieta = getSettingDouble("cost_per_dieta", 25.0); // Costo estimado de dieta (Nuevo setting)
-    totalNoImprevistos += numDietas * dietaPrice; // Venta: basado en precio de dieta
-    totalCost += numDietas * costPerDieta;        // Costo: basado en costo de dieta
+    // Obtener el precio de venta por dieta (de los settings O del spinbox sbPrecioDiet)
+    double precioVentaDieta = dietaPrice; // Valor por defecto de settings (antiguo)
+    if (sbPrecioDiet->value() > 0) {
+        precioVentaDieta = sbPrecioDiet->value(); // Usar el valor del spinbox si se ha establecido
+    }
+    
+    // El cálculo de dietas solo aplica si cbDietasYes está en "Si"
+    if (cbDietasYes->currentText() == "Si") {
+        int numOperariosDieta = spDietas->value();
+        int numDiasDieta = spDiasDieta->value();
+        int numDietasTotales = numOperariosDieta * numDiasDieta;
 
-    // Horas de trabajo (Venta)
+        double costPerDieta = getSettingDouble("cost_per_dieta", 150.0); // Costo estimado real
+        
+        // Venta: Total de dietas cobradas al cliente
+        totalNoImprevistos += numDietasTotales * precioVentaDieta; 
+        
+        // Costo: Costo real incurrido
+        totalCost += numDietasTotales * costPerDieta;        
+    }
+
+    // --- Horas de Trabajo Y Viaje (Bloque CORREGIDO Y AMPLIADO) ---
+    
+    // Venta: Horas de obra
     double horasBase = sbHoras->value();
-    double horasIncremento = 0.0;
+    double horasViajeInput = sbHorasViaje->value(); // <--- Nuevo campo
+    double horasIncremento = 0.0; // Incremento por zona (Zona Centro)
+    
     if (cbZona->currentText() == "Zona Centro") {
         if (rbCorta->isChecked()) horasIncremento = 0.30 * 2;
         else if (rbMedia->isChecked()) horasIncremento = 1.0 * 2;
         else if (rbLarga->isChecked()) horasIncremento = 1.5 * 2;
     }
-    double horasTotales = horasBase + horasIncremento;
-    totalNoImprevistos += horasTotales * horaPrice; // Venta: basado en precio/hora
+    
+    // Total de horas cobradas al cliente (Obra + Incremento + Viaje)
+    double horasTotalesVenta = horasBase + horasIncremento + horasViajeInput; 
+    totalNoImprevistos += horasTotalesVenta * horaPrice; // Venta: basado en precio/hora (se cobra igual)
 
-    // Horas de trabajo (Costo)
-    double costPerHour = getSettingDouble("cost_per_hour", 25.0); // Costo estimado de mano de obra (Nuevo setting)
-    totalCost += sbHoras->value() * costPerHour; // Solo se considera el costo de horasBase, no de desplazamiento.
+    // Costo: Horas de obra + Horas de viaje (sin el incremento por zona)
+    double costPerHourObra = getSettingDouble("cost_per_hour", 65.0); // Costo hora de obra
+    double costPerHourViaje = getSettingDouble("cost_hour_viaje", 65.0); // Costo hora de viaje
+    
+    double costoHorasObra = horasBase * costPerHourObra;
+    double costoHorasViaje = horasViajeInput * costPerHourViaje;
+    
+    totalCost += costoHorasObra;
+    totalCost += costoHorasViaje;
 
     // Furgonetas
     int numFurgonetas = spFurgonetas->value();
-    double costVanDay = getSettingDouble("cost_van_day", 45.0);
+    double costVanDay = getSettingDouble("cost_van_day", 95.0);
     
     if (numFurgonetas > 0 && spDias->value() > 0) {
         // Venta: SE ELIMINA LA LÍNEA DE VENTA. La furgoneta ya no se cobra al cliente.
@@ -203,9 +178,9 @@ void MainWindow::calculateCostsAndBenefits(double &totalSelling, double &totalCo
     }
     
     // --- Otros costos estimados ---
-    double fuelCost = sbLitros->value() * 1.4; // Costo combustible real
-    double dietCost = spDietas->value() * spDiasDieta->value() * 25.0; // Costo dietas estimado
-    double hoursCost = sbHoras->value() * 25.0; // Costo mano de obra estimado
+    double fuelCost = sbLitros->value() * 1.7; // Costo combustible real
+    double dietCost = spDietas->value() * spDiasDieta->value() * 150.0; // Costo dietas estimado
+    double hoursCost = sbHoras->value() * 65.0; // Costo mano de obra estimado
     
     totalCost += fuelCost + dietCost + hoursCost;
     estimatedBenefit = totalSelling - totalCost;

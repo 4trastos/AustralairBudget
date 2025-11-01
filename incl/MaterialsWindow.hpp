@@ -19,6 +19,7 @@ public:
     MaterialsWindow(QWidget *parent = nullptr);
     //~MaterialsWindow() = default;
     QList<SelectedMaterial> getSelectedMaterials() const;
+    void addMaterialToMasterList(const QString &category, const QString &name, double pvp, double cost);
 
 private slots:
     void onCategoryChanged(const QString &category);

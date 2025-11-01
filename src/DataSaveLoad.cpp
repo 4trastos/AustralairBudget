@@ -56,7 +56,7 @@ void MainWindow::onSaveBudget()
     qb.addBindValue(cbZona->currentText());          // zona
     qb.addBindValue(spDietas->value());             // dietas
     qb.addBindValue(spDiasDieta->value());          // dias_dieta
-    qb.addBindValue(spPrecioDiet->value());         // Precio dieta X día
+    qb.addBindValue(sbPrecioDiet->value());         // Precio dieta X día
     //qb.addBindValue(leLocalidadObra ? leLocalidadObra->text() : QString()); // localidad
     qb.addBindValue(spFurgonetas->value());         // Furgonetas
     qb.addBindValue(sbCosteFurgo->value());         // Coste Furgonetas
@@ -164,7 +164,7 @@ void MainWindow::onLoadSelectedBudget()
     cbZona->setCurrentText(query.value(9).toString());
     spDietas->setValue(query.value(10).toInt());
     spDiasDieta->setValue(query.value(11).toInt());
-    spPrecioDiet->setValue(query.value(12).toInt());
+    sbPrecioDiet->setValue(query.value(12).toInt());
     spFurgonetas->setValue(query.value(13).toInt());
     sbCosteFurgo->setValue(query.value(14).toInt());
     

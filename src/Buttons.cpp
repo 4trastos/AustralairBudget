@@ -80,7 +80,7 @@ void MainWindow::onDeleteFields() {
     spOperarios->setValue(0);
     leLocalidadObra->clear();
     spElevPrecDia->setValue(0);
-    spPrecioDiet->setValue(0);
+    sbPrecioDiet->setValue(0);
     spFurgonetas->setValue(0);
     sbCosteFurgo->setValue(0);
 

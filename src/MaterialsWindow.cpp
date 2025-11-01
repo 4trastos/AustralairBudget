@@ -3,35 +3,63 @@
 #include "MainWindow.hpp"
 #include "MaterialsWindow.hpp"
 
-const QMap<QString, QMap<QString, QPair<double, double>>> MaterialsData = {
-    {"MÁQUINAS", {
-        {"TBS", {1500, 1000}},
-        {"CW3", {3500, 1200}},
-        {"COOLAIR", {960, 500}},
-        {"ICON", {1250, 1000}},
-        {"TBSi", {1800, 1400}}
-    }},
-    {"EXTRACTOR", {
-        {"SETA", {500, 400}},
-        {"GRAN CAUDAL", {800, 500}}
-    }},
-    {"FONTANERIA", {{"FONTANERIA", {600, 300}}}},
-    {"ELECTRICIDAD", {{"ELECTRICIDAD", {700, 400}}}},
-    {"CONDUCTOS", {{"CONDUCTOS", {100, 30}}}},
-    {"SUPLEMENTOS CONDUCTOS", {{"SUPLEMENTOS CONDUCTOS", {250, 100}}}},
-    {"REGILLAS", {{"REGILLAS", {150, 120}}}},
-    {"PASARELA POR CUBIERTA", {{"PASARELA POR CUBIERTA", {250, 130}}}},
-    {"LINEA DE VIDA", {{"LINEA DE VIDA", {60, 20}}}},
-    {"APERTURA HUECO", {{"APERTURA HUECO", {200, 80}}}},
-    {"SELLAMIENTO", {{"SELLAMIENTO", {120, 90}}}},
-    {"SOPORTACIÓN", {{"SOPORTACIÓN", {100, 20}}}},
-};
+// const QMap<QString, QMap<QString, QPair<double, double>>> MaterialsData = {
+//     {"MÁQUINAS", {
+//         {"TBS", {1500, 1000}},
+//         {"CW3", {3500, 1200}},
+//         {"COOLAIR", {960, 500}},
+//         {"ICON", {1250, 1000}},
+//         {"TBSi", {1800, 1400}}
+//     }},
+//     {"EXTRACTOR", {
+//         {"SETA", {500, 400}},
+//         {"GRAN CAUDAL", {800, 500}}
+//     }},
+//     {"FONTANERIA", {{"FONTANERIA", {600, 300}}}},
+//     {"ELECTRICIDAD", {{"ELECTRICIDAD", {700, 400}}}},
+//     {"CONDUCTOS", {{"CONDUCTOS", {100, 30}}}},
+//     {"SUPLEMENTOS CONDUCTOS", {{"SUPLEMENTOS CONDUCTOS", {250, 100}}}},
+//     {"REGILLAS", {{"REGILLAS", {150, 120}}}},
+//     {"PASARELA POR CUBIERTA", {{"PASARELA POR CUBIERTA", {250, 130}}}},
+//     {"LINEA DE VIDA", {{"LINEA DE VIDA", {60, 20}}}},
+//     {"APERTURA HUECO", {{"APERTURA HUECO", {200, 80}}}},
+//     {"SELLAMIENTO", {{"SELLAMIENTO", {120, 90}}}},
+//     {"SOPORTACIÓN", {{"SOPORTACIÓN", {100, 20}}}},
+// };
+
+static QMap<QString, QMap<QString, QPair<double, double>>> &getMasterMaterialsData()
+{
+    static QMap<QString, QMap<QString, QPair<double, double>>> s_materialsData = {
+        {"MÁQUINAS", {
+            {"TBS", {3500, 1000}},
+            {"CW3", {5500, 1200}},
+            {"COOLAIR", {1960, 900}},
+            {"ICON", {1250, 1000}},
+            {"TBSi", {1800, 1400}}
+        }},
+        {"EXTRACTOR", {
+            {"SETA", {500, 400}},
+            {"GRAN CAUDAL", {800, 500}}
+        }},
+        {"FONTANERIA", {{"FONTANERIA", {600, 300}}}},
+        {"ELECTRICIDAD", {{"ELECTRICIDAD", {700, 400}}}},
+        {"CONDUCTOS", {{"CONDUCTOS", {100, 30}}}},
+        {"SUPLEMENTOS CONDUCTOS", {{"SUPLEMENTOS CONDUCTOS", {250, 100}}}},
+        {"REGILLAS", {{"REGILLAS", {150, 120}}}},
+        {"PASARELA POR CUBIERTA", {{"PASARELA POR CUBIERTA", {250, 130}}}},
+        {"LINEA DE VIDA", {{"LINEA DE VIDA", {60, 20}}}},
+        {"APERTURA HUECO", {{"APERTURA HUECO", {200, 80}}}},
+        {"SELLAMIENTO", {{"SELLAMIENTO", {120, 90}}}},
+        {"SOPORTACIÓN", {{"SOPORTACIÓN", {100, 20}}}},
+    };
+    return s_materialsData;
+}
 
 MaterialsWindow::MaterialsWindow(QWidget *parent) : QDialog(parent)
 {
     setWindowTitle("Gestión de Materiales - Base de Datos");
     setModal(true);
-    materialsData = MaterialsData; // Carga la base de datos
+    materialsData = getMasterMaterialsData(); // Carga la base de datos
     setupUi();
     loadMaterials();
 }
@@ -189,4 +217,11 @@ void MaterialsWindow::onMaterialSelected(QListWidgetItem *item)
     // Función reservada para una posible doble-clic o selección avanzada.
     // De momento, solo la dejamos definida.
     Q_UNUSED(item); 
+}
+
+void MaterialsWindow::addMaterialToMasterList(const QString &category, const QString &name, double pvp, double cost)
+{
+    QPair<double, double> prices = qMakePair(pvp, cost);
+    getMasterMaterialsData()[category].insert(name, prices);
+    materialsData = getMasterMaterialsData();
 }
