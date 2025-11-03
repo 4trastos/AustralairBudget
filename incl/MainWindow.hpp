@@ -10,6 +10,7 @@
 # include <QtPrintSupport/QPrintDialog>
 # include "MaterialsWindow.hpp"
 # include <QtPrintSupport/QPrintPreviewDialog>
+# include <QStackedWidget> 
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -22,6 +23,7 @@ class QPushButton;
 class QListWidget;
 class QListWidget;
 class QWidget;
+class QStackedWidget;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
@@ -76,7 +78,6 @@ private:
 
     MaterialsWindow *materialsManager = nullptr;
 
-
     // --- Variables de estado ----
     int currentBudgetId = 0;
     QString currentStatus = "Abierta";
@@ -96,6 +97,7 @@ private:
     QListWidget *lwBudgets;
     QRadioButton *rbDietasSi, *rbDietasNo, *rbCorta, *rbMedia, *rbLarga;
     QWidget *ivaRowWidget;
+    QStackedWidget *stackedWidget;
 
     // --- Totales ---
     QLabel *lblTotalNoIVA, *lblTotalConIVA, *lblIVAPct;

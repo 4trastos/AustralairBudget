@@ -17,3 +17,20 @@ int main(int argc, char **argv)
     inicio.show();
     return a.exec();
 }
+
+
+
+/* int main(int argc, char **argv)
+{
+    QApplication a(argc, argv);
+
+    // Configurar estilo para mejor apariencia
+    a.setStyle("Fusion");
+
+    // init DB (in constructor also)
+    AustralairBudget inicio;
+    //inicio.show();
+    inicio.showMaximized();
+    return a.exec();
+}
+ */

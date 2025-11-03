@@ -5,6 +5,10 @@
 
 void MainWindow::onCalculate()
 {
+    if (!lblTotalNoIVA || !lblTotalConIVA || !lblCostoEstimado || !lblBeneficioEstimado) {
+        return;
+    }
+
     // 1. Cargar precios desde la Base de Datos (settings)
     double ivaPct = getSettingDouble("iva_pct", 21.0);
     double fuelPriceLiter = getSettingDouble("fuel_liter_price", 1.80);

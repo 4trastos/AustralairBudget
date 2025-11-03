@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 //MainWindow::~MainWindow(){}
 
+// DESKTOP 
 void MainWindow::setupUi()
 {
     QWidget *central = new QWidget(this);
@@ -599,6 +600,695 @@ Aclaración y Solución de Bloqueo: Si el requisito es que, tras guardar un pres
 
     // ====================================================
 }
+
+// APP
+/* void MainWindow::setupUi()
+{
+    QWidget *central = new QWidget(this);
+    
+    // ==================== LAYOUT PRINCIPAL CON SPLITTER ====================
+    auto *mainSplitter = new QSplitter(Qt::Horizontal, central);
+    
+    // ==================== INICIALIZAR TODAS LAS LABELS PRIMERO ====================
+    // (Para que estén disponibles desde cualquier pantalla)
+    lblTotalNoIVA = new QLabel("0.00 €");
+    lblTotalConIVA = new QLabel("0.00 €");
+    lblCostoEstimado = new QLabel("0.00 €");   
+    lblBeneficioEstimado = new QLabel("0.00 €");
+    lblDesviacionPVP = new QLabel("N/A €");
+    lblIVAPct = new QLabel("(21%)");
+    ivaRowWidget = new QWidget; // También crear el widget del IVA aquí
+    
+    // ==================== COLUMNA IZQUIERDA (STACKED WIDGET) ====================
+    auto *leftWidget = new QWidget;
+    auto *leftLayout = new QVBoxLayout(leftWidget);
+    leftLayout->setContentsMargins(0, 0, 0, 0);
+    
+    stackedWidget = new QStackedWidget(this);
+    
+    // ---------------------- PANTALLA 1: DATOS DEL CLIENTE ----------------------
+    auto *clientPage = new QWidget;
+    auto *clientLayout = new QVBoxLayout(clientPage);
+    
+    auto *clientGroup = new QGroupBox("Datos del cliente");
+    auto *clientForm = new QGridLayout(clientGroup);
+    
+    // Campos cliente
+    leClientName = new QLineEdit; 
+    leCompany = new QLineEdit;
+    leContact = new QLineEdit; 
+    leAddress = new QLineEdit;
+    lePhone = new QLineEdit; 
+    leEmail = new QLineEdit;
+    leCIF = new QLineEdit; 
+    leNumPresu = new QLineEdit;
+    leFecha = new QLineEdit;
+    
+    // Configurar tamaños para tablet
+    QList<QLineEdit*> lineEdits = {leClientName, leCompany, leContact, leAddress, 
+                                  lePhone, leEmail, leCIF, leNumPresu, leFecha};
+    for (auto *le : lineEdits) {
+        le->setMinimumHeight(45);
+    }
+    
+    // Layout cliente
+    clientForm->addWidget(new QLabel("Cliente:"), 0, 0);
+    clientForm->addWidget(leClientName, 0, 1);
+    clientForm->addWidget(new QLabel("Empresa:"), 0, 2);
+    clientForm->addWidget(leCompany, 0, 3);
+    
+    clientForm->addWidget(new QLabel("Contacto:"), 1, 0);
+    clientForm->addWidget(leContact, 1, 1);
+    clientForm->addWidget(new QLabel("Teléfono:"), 1, 2);
+    clientForm->addWidget(lePhone, 1, 3);
+    
+    clientForm->addWidget(new QLabel("Email:"), 2, 0);
+    clientForm->addWidget(leEmail, 2, 1);
+    clientForm->addWidget(new QLabel("Fecha:"), 2, 2);
+    clientForm->addWidget(leFecha, 2, 3);
+    
+    clientForm->addWidget(new QLabel("Dirección:"), 3, 0);
+    clientForm->addWidget(leAddress, 3, 1, 1, 3);
+    
+    clientForm->addWidget(new QLabel("CIF:"), 4, 0);
+    clientForm->addWidget(leCIF, 4, 1);
+    clientForm->addWidget(new QLabel("Nº Presupuesto:"), 4, 2);
+    clientForm->addWidget(leNumPresu, 4, 3);
+    
+    for (int i = 0; i < 4; ++i) {
+        clientForm->setColumnStretch(i, 1);
+    }
+    
+    clientLayout->addWidget(clientGroup);
+    clientLayout->addStretch();
+    
+    // Botón siguiente
+    auto *btnNext1 = new QPushButton("Siguiente → Datos de la Obra");
+    btnNext1->setMinimumHeight(50);
+    clientLayout->addWidget(btnNext1);
+    
+    // ---------------------- PANTALLA 2: DATOS DE LA OBRA (CON SCROLL) ----------------------
+    auto *workPage = new QWidget;
+    auto *workMainLayout = new QVBoxLayout(workPage);
+    
+    // Crear scroll area
+    auto *scrollArea = new QScrollArea;
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    
+    auto *scrollWidget = new QWidget;
+    auto *workLayout = new QVBoxLayout(scrollWidget);
+    
+    auto *workGroup = new QGroupBox("Datos de la obra");
+    auto *workForm = new QGridLayout(workGroup);
+    
+    // Campos de obra
+    sbMetros = new QDoubleSpinBox; sbMetros->setRange(0, 1e6); sbMetros->setSuffix(" m²");
+    cbTipoLocal = new QComboBox; cbTipoLocal->addItems({" ··· ","Nave industrial","Local comercial","Vivienda","Complejo Deportivo"});
+    cbTipoCubierta = new QComboBox; cbTipoCubierta->addItems({" ··· ","Chapa","Teja","Cubierta plana","Panel sandwich", "Uralita"});
+    sbKM = new QDoubleSpinBox; sbKM->setRange(0,10000); sbKM->setSuffix(" km");
+    sbLitros = new QDoubleSpinBox; sbLitros->setRange(0,10000); sbLitros->setSuffix(" lts");
+    sbHoras = new QDoubleSpinBox; sbHoras->setRange(0,1e5);
+    spDias = new QSpinBox; spDias->setRange(0,365);
+    spOperarios = new QSpinBox; spOperarios->setRange(0,60);
+    cbExtractor = new QComboBox; cbExtractor->addItems({"No", "Si"});
+    sbHorasViaje = new QDoubleSpinBox; sbHorasViaje->setRange(0,1e5);
+    spFurgonetas = new QSpinBox; spFurgonetas->setRange(0,100);
+    
+    sbCosteFurgo = new QDoubleSpinBox; sbCosteFurgo->setRange(0, 1e6); sbCosteFurgo->setSuffix(" €");
+    sbCosteFurgo->setValue(getSettingDouble("cost_van_day", 95.0));
+    sbCosteFurgo->setEnabled(false);
+    sbPrecioDiet = new QDoubleSpinBox; sbPrecioDiet->setRange(0,1e6); sbPrecioDiet->setSuffix(" €");
+    sbPrecioDiet->setValue(getSettingDouble("dieta_price", 150.0));
+    sbPrecioDiet->setEnabled(false);
+
+    cbElevador = new QComboBox; cbElevador->addItems({"No","Si"});
+    sbElevPortes = new QDoubleSpinBox; sbElevPortes->setRange(0, 1e6); sbElevPortes->setSuffix(" €");
+    spElevDia = new QSpinBox; spElevDia->setRange(0,1000);
+    spElevPrecDia = new QSpinBox; spElevPrecDia->setRange(0, 3000);
+    sbElevPortes->setEnabled(false);
+    spElevDia->setEnabled(false);
+    spElevPrecDia->setEnabled(false);
+
+    cbZona = new QComboBox; 
+    cbZona->addItems({"Zona Centro","Otras Zonas"});
+    cbDietasYes = new QComboBox; cbDietasYes->addItems({"No","Si"});
+    rbCorta = new QRadioButton("Corta");
+    rbMedia  = new QRadioButton("Media");
+    rbLarga  = new QRadioButton("Larga");
+    spDietas = new QSpinBox; spDietas->setRange(0,1000);
+    spDiasDieta = new QSpinBox; spDiasDieta->setRange(0,365);
+    spDietas->setEnabled(false);
+    spDiasDieta->setEnabled(false);
+    cbDietasYes->setEnabled(false);
+    
+    // Configurar controles
+    QList<QComboBox*> combos = {cbTipoLocal, cbTipoCubierta, cbExtractor, cbElevador, cbZona, cbDietasYes};
+    QList<QDoubleSpinBox*> dSpinBoxes = {sbMetros, sbKM, sbLitros, sbHoras, sbHorasViaje, sbCosteFurgo, sbPrecioDiet, sbElevPortes};
+    QList<QSpinBox*> spinBoxes = {spDias, spOperarios, spFurgonetas, spElevDia, spElevPrecDia, spDietas, spDiasDieta};
+    
+    for (auto *combo : combos) combo->setMinimumHeight(45);
+    for (auto *spin : dSpinBoxes) spin->setMinimumHeight(45);
+    for (auto *spin : spinBoxes) spin->setMinimumHeight(45);
+    
+    // Layout obra
+    int row = 0;
+    workForm->addWidget(new QLabel("Tipo local:"), row, 0);
+    workForm->addWidget(cbTipoLocal, row, 1);
+    workForm->addWidget(new QLabel("m²:"), row, 2);
+    workForm->addWidget(sbMetros, row, 3); row++;
+    
+    workForm->addWidget(new QLabel("Cubierta:"), row, 0);
+    workForm->addWidget(cbTipoCubierta, row, 1);
+    workForm->addWidget(new QLabel("Extracción:"), row, 2);
+    workForm->addWidget(cbExtractor, row, 3); row++;
+    
+    workForm->addWidget(new QLabel("Elevación:"), row, 0);
+    workForm->addWidget(cbElevador, row, 1);
+    workForm->addWidget(new QLabel("Portes:"), row, 2);
+    workForm->addWidget(sbElevPortes, row, 3); row++;
+    
+    workForm->addWidget(new QLabel("Días elev.:"), row, 0);
+    workForm->addWidget(spElevDia, row, 1);
+    workForm->addWidget(new QLabel("Precio/día:"), row, 2);
+    workForm->addWidget(spElevPrecDia, row, 3); row++;
+    
+    workForm->addWidget(new QLabel("Zona:"), row, 0);
+    workForm->addWidget(cbZona, row, 1);
+    workForm->addWidget(new QLabel("Distancia:"), row, 2);
+    auto *distanceLayout = new QHBoxLayout;
+    distanceLayout->addWidget(rbCorta);
+    distanceLayout->addWidget(rbMedia);
+    distanceLayout->addWidget(rbLarga);
+    auto *distanceWidget = new QWidget;
+    distanceWidget->setLayout(distanceLayout);
+    workForm->addWidget(distanceWidget, row, 3); row++;
+    
+    workForm->addWidget(new QLabel("Dietas:"), row, 0);
+    workForm->addWidget(cbDietasYes, row, 1);
+    workForm->addWidget(new QLabel("Operarios:"), row, 2);
+    workForm->addWidget(spDietas, row, 3); row++;
+    
+    workForm->addWidget(new QLabel("Días dieta:"), row, 0);
+    workForm->addWidget(spDiasDieta, row, 1);
+    workForm->addWidget(new QLabel("Precio/día:"), row, 2);
+    workForm->addWidget(sbPrecioDiet, row, 3); row++;
+    
+    workForm->addWidget(new QLabel("Furgonetas:"), row, 0);
+    workForm->addWidget(spFurgonetas, row, 1);
+    workForm->addWidget(new QLabel("Coste/furgo:"), row, 2);
+    workForm->addWidget(sbCosteFurgo, row, 3); row++;
+    
+    workForm->addWidget(new QLabel("KM:"), row, 0);
+    workForm->addWidget(sbKM, row, 1);
+    workForm->addWidget(new QLabel("Combustible:"), row, 2);
+    workForm->addWidget(sbLitros, row, 3); row++;
+    
+    workForm->addWidget(new QLabel("Operarios:"), row, 0);
+    workForm->addWidget(spOperarios, row, 1);
+    workForm->addWidget(new QLabel("Días:"), row, 2);
+    workForm->addWidget(spDias, row, 3); row++;
+    
+    workForm->addWidget(new QLabel("Horas obra:"), row, 0);
+    workForm->addWidget(sbHoras, row, 1);
+    workForm->addWidget(new QLabel("Horas viaje:"), row, 2);
+    workForm->addWidget(sbHorasViaje, row, 3);
+    
+    for (int i = 0; i < 4; ++i) {
+        workForm->setColumnStretch(i, 1);
+    }
+    
+    workLayout->addWidget(workGroup);
+    workLayout->addStretch();
+    
+    scrollArea->setWidget(scrollWidget);
+    workMainLayout->addWidget(scrollArea);
+    
+    // Botones navegación obra (fuera del scroll)
+    auto *workButtonsLayout = new QHBoxLayout;
+    auto *btnBack2 = new QPushButton("← Atrás");
+    auto *btnNext2 = new QPushButton("Siguiente → Materiales y Acciones");
+    btnBack2->setMinimumHeight(50);
+    btnNext2->setMinimumHeight(50);
+    workButtonsLayout->addWidget(btnBack2);
+    workButtonsLayout->addWidget(btnNext2);
+    workMainLayout->addLayout(workButtonsLayout);
+    
+    // ---------------------- PANTALLA 3: MATERIALES Y ACCIONES (UNIFICADA) ----------------------
+    auto *materialsActionsPage = new QWidget;
+    auto *materialsActionsLayout = new QVBoxLayout(materialsActionsPage);
+
+    // --- Sección Materiales ---
+    auto *materialsGroup = new QGroupBox("Materiales");
+    auto *materialsForm = new QVBoxLayout(materialsGroup);
+
+    twMaterials = new QTableWidget(0, 5);
+    twMaterials->setHorizontalHeaderLabels({"Nombre", "Cantidad", "Precio Venta", "Precio Compra", "Total Venta"});
+    twMaterials->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    twMaterials->verticalHeader()->setDefaultSectionSize(45);
+
+    materialsForm->addWidget(twMaterials);
+
+    // Botones materiales
+    auto *materialsButtons = new QHBoxLayout;
+    btnAddMat = new QPushButton("Añadir Material");
+    btnRemoveMat = new QPushButton("Eliminar Material");
+    auto *btnOpenMaterials = new QPushButton("Gestor de Materiales");
+
+    btnAddMat->setMinimumHeight(45);
+    btnRemoveMat->setMinimumHeight(45);
+    btnOpenMaterials->setMinimumHeight(45);
+
+    materialsButtons->addWidget(btnOpenMaterials);
+    materialsButtons->addWidget(btnAddMat);
+    materialsButtons->addWidget(btnRemoveMat);
+    materialsForm->addLayout(materialsButtons);
+
+    materialsActionsLayout->addWidget(materialsGroup);
+
+    // --- Sección Acciones ---
+    auto *actionsGroup = new QGroupBox("Acciones");
+    auto *actionsForm = new QGridLayout(actionsGroup);
+
+    // Botones de acción
+    btnCalc = new QPushButton("Calcular Desviación");
+    btnSave = new QPushButton("Guardar Presupuesto");
+    btnPDF = new QPushButton("Guardar en PDF");
+    btnPrint = new QPushButton("Imprimir Presupuesto");
+    btnStart = new QPushButton("Mantenimientos");
+    auto *btnEditPrices = new QPushButton("Lista de Materiales");
+
+    QList<QPushButton*> actionButtons = {btnCalc, btnSave, btnPDF, btnPrint, btnStart, btnEditPrices};
+    for (auto *btn : actionButtons) {
+        btn->setMinimumHeight(60);
+    }
+
+    actionsForm->addWidget(btnEditPrices, 0, 0);
+    actionsForm->addWidget(btnPDF, 0, 1);
+    actionsForm->addWidget(btnCalc, 0, 2);
+    actionsForm->addWidget(btnSave, 1, 0);
+    actionsForm->addWidget(btnPrint, 1, 1);
+    actionsForm->addWidget(btnStart, 1, 2);
+
+    materialsActionsLayout->addWidget(actionsGroup);
+    materialsActionsLayout->addStretch();
+
+    // Botones navegación materiales y acciones
+    auto *materialsActionsNavLayout = new QHBoxLayout;
+    auto *btnBack3 = new QPushButton("← Atrás");
+    auto *btnNext3 = new QPushButton("Siguiente → Resumen");
+    btnBack3->setMinimumHeight(50);
+    btnNext3->setMinimumHeight(50);
+    materialsActionsNavLayout->addWidget(btnBack3);
+    materialsActionsNavLayout->addWidget(btnNext3);
+    materialsActionsLayout->addLayout(materialsActionsNavLayout);
+    
+    // ---------------------- PANTALLA 4: RESUMEN ----------------------
+    auto *summaryPage = new QWidget;
+    auto *summaryLayout = new QVBoxLayout(summaryPage);
+    
+    auto *summaryGroup = new QGroupBox("Resumen del Presupuesto");
+    auto *summaryForm = new QHBoxLayout(summaryGroup);
+    
+    // Columna controles
+    auto *summaryLeft = new QVBoxLayout;
+    QPushButton *btnToggleIVA = new QPushButton("Mostrar IVA (NO)");
+    QPushButton *btnToggleImprevistos = new QPushButton("Imprevistos (10% - NO)");
+    btnToggleIVA->setCheckable(true);
+    btnToggleImprevistos->setCheckable(true);
+    btnToggleIVA->setMinimumHeight(45);
+    btnToggleImprevistos->setMinimumHeight(45);
+    
+    summaryLeft->addWidget(btnToggleIVA);
+    summaryLeft->addWidget(btnToggleImprevistos);
+    summaryLeft->addStretch();
+    
+    // Columna valores - USAR LAS LABELS QUE YA EXISTEN
+    auto *summaryRight = new QGridLayout;
+    
+    // Configurar fuentes para las labels existentes
+    QList<QLabel*> totalLabels = {lblTotalNoIVA, lblTotalConIVA, lblCostoEstimado, lblBeneficioEstimado, lblDesviacionPVP};
+    QFont totalFont;
+    totalFont.setPointSize(12);
+    totalFont.setBold(true);
+    for (auto *label : totalLabels) {
+        label->setFont(totalFont);
+        label->setMinimumHeight(30);
+    }
+    
+    // Usar las labels existentes (no crear nuevas)
+    summaryRight->addWidget(new QLabel("Total sin IVA:"), 0, 0, Qt::AlignRight);
+    summaryRight->addWidget(lblTotalNoIVA, 0, 1, Qt::AlignLeft);
+    
+    // Configurar el widget del IVA (usando lblIVAPct que ya existe)
+    auto *ivaRowLayout = new QGridLayout(ivaRowWidget);
+    ivaRowLayout->setContentsMargins(0,0,0,0);
+    ivaRowLayout->setHorizontalSpacing(8);
+    ivaRowLayout->addWidget(new QLabel("Total con IVA:"), 0, 0, Qt::AlignRight);
+    ivaRowLayout->addWidget(lblTotalConIVA, 0, 2, Qt::AlignLeft);
+    ivaRowLayout->addWidget(lblIVAPct, 0, 1, Qt::AlignLeft);
+    
+    summaryRight->addWidget(ivaRowWidget, 1, 0, 1, 2);
+    ivaRowWidget->setVisible(isIVAShown);
+    
+    summaryRight->addWidget(new QLabel("Costo estimado:"), 2, 0, Qt::AlignRight);     
+    summaryRight->addWidget(lblCostoEstimado, 2, 1, Qt::AlignLeft);  
+    summaryRight->addWidget(new QLabel("Beneficio estimado:"), 3, 0, Qt::AlignRight);          
+    summaryRight->addWidget(lblBeneficioEstimado, 3, 1, Qt::AlignLeft);
+    summaryRight->addWidget(new QLabel("Desviación PVP:"), 4, 0, Qt::AlignRight);     
+    summaryRight->addWidget(lblDesviacionPVP, 4, 1, Qt::AlignLeft);
+    
+    summaryForm->addLayout(summaryLeft);
+    summaryForm->addSpacing(20);
+    summaryForm->addLayout(summaryRight);
+    
+    summaryLayout->addWidget(summaryGroup);
+    summaryLayout->addStretch();
+    
+    // Botones navegación resumen
+    auto *summaryNavLayout = new QHBoxLayout;
+    auto *btnBack4 = new QPushButton("← Atrás");
+    auto *btnFinish = new QPushButton("Finalizar");
+    btnBack4->setMinimumHeight(50);
+    btnFinish->setMinimumHeight(50);
+    summaryNavLayout->addWidget(btnBack4);
+    summaryNavLayout->addWidget(btnFinish);
+    summaryLayout->addLayout(summaryNavLayout);
+    
+    // ==================== AÑADIR PANTALLAS AL STACK ====================
+    stackedWidget->addWidget(clientPage);              // Índice 0
+    stackedWidget->addWidget(workPage);                // Índice 1  
+    stackedWidget->addWidget(materialsActionsPage);    // Índice 2 (unificada)
+    stackedWidget->addWidget(summaryPage);             // Índice 3
+    
+    leftLayout->addWidget(stackedWidget);
+    
+    // ==================== COLUMNA DERECHA (LISTA DE PRESUPUESTOS) ====================
+    auto *rightWidget = new QWidget;
+    auto *rightV = new QVBoxLayout(rightWidget);
+    rightV->setContentsMargins(5, 5, 5, 5);
+    rightV->setSpacing(8);
+
+    // --- Buscador ---
+    auto *searchLayout = new QHBoxLayout;
+    QLineEdit *leSearchClient = new QLineEdit;
+    leSearchClient->setPlaceholderText("Buscar cliente...");
+    leSearchClient->setMinimumHeight(35);
+    QPushButton *btnClearSearch = new QPushButton("✕");
+    btnClearSearch->setToolTip("Limpiar búsqueda");
+    btnClearSearch->setFixedSize(35, 35);
+
+    connect(leSearchClient, &QLineEdit::textChanged, this, [this](const QString &text) {
+        if (!lwBudgets) return;
+        for (int i = 0; i < lwBudgets->count(); ++i) {
+            QListWidgetItem *item = lwBudgets->item(i);
+            item->setHidden(!item->text().contains(text, Qt::CaseInsensitive));
+        }
+    });
+
+    connect(btnClearSearch, &QPushButton::clicked, leSearchClient, &QLineEdit::clear);
+    
+    searchLayout->addWidget(leSearchClient);
+    searchLayout->addWidget(btnClearSearch);
+
+    // --- Lista de presupuestos ---
+    lwBudgets = new QListWidget;
+    lwBudgets->setMinimumWidth(250);
+    lwBudgets->setAlternatingRowColors(true);
+
+    // --- Botones columna derecha ---
+    QPushButton *btnLoad = new QPushButton("Abrir");
+    QPushButton *btnDelete = new QPushButton("Eliminar");
+    QPushButton *btnClearFields = new QPushButton("Borrar campos");
+    QPushButton *btnCloseProject = new QPushButton("Cerrar obra");
+    QPushButton *btnPrice = new QPushButton("Editar precios base");
+    btnCloseProject->setObjectName("btnCloseProject");
+
+    QList<QPushButton*> rightButtons = {btnLoad, btnDelete, btnClearFields, btnCloseProject, btnPrice};
+    for (auto *btn : rightButtons) {
+        btn->setMinimumHeight(40);
+        btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    }
+
+    // --- Layouts de botones ---
+    auto *btnsLayout1 = new QHBoxLayout;
+    btnsLayout1->setSpacing(6);
+    btnsLayout1->addWidget(btnLoad);
+    btnsLayout1->addWidget(btnDelete);
+
+    auto *btnsLayout2 = new QHBoxLayout;
+    btnsLayout2->setSpacing(6);
+    btnsLayout2->addWidget(btnClearFields);
+    btnsLayout2->addWidget(btnCloseProject);
+
+    auto *btnsLayout3 = new QHBoxLayout;
+    btnsLayout3->addWidget(btnPrice);
+
+    // --- Ensamblar columna derecha ---
+    rightV->addWidget(new QLabel("Presupuestos guardados"));
+    rightV->addLayout(searchLayout);
+    rightV->addWidget(lwBudgets);
+    rightV->addLayout(btnsLayout1);
+    rightV->addLayout(btnsLayout2);
+    rightV->addLayout(btnsLayout3);
+    rightV->addStretch(1);
+
+    // ==================== CONFIGURAR SPLITTER ====================
+    mainSplitter->addWidget(leftWidget);
+    mainSplitter->addWidget(rightWidget);
+    mainSplitter->setStretchFactor(0, 3);  // Izquierda 75%
+    mainSplitter->setStretchFactor(1, 1);  // Derecha 25%
+    mainSplitter->setHandleWidth(8);
+
+    // ==================== LAYOUT FINAL ====================
+    auto *mainLayout = new QHBoxLayout(central);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->addWidget(mainSplitter);
+
+    setCentralWidget(central);
+    setWindowTitle("Australair - Gestor de presupuestos");
+    resize(1200, 800);
+
+    // ==================== CONEXIONES DE NAVEGACIÓN ====================
+    connect(btnNext1, &QPushButton::clicked, this, [this]() { stackedWidget->setCurrentIndex(1); }); // Cliente → Obra
+    connect(btnNext2, &QPushButton::clicked, this, [this]() { stackedWidget->setCurrentIndex(2); }); // Obra → Materiales y Acciones
+    connect(btnNext3, &QPushButton::clicked, this, [this]() { 
+        onCalculate(); // Calcular antes de mostrar resumen
+        stackedWidget->setCurrentIndex(3); // Materiales y Acciones → Resumen
+    });
+    
+    connect(btnBack2, &QPushButton::clicked, this, [this]() { stackedWidget->setCurrentIndex(0); }); // Obra → Cliente
+    connect(btnBack3, &QPushButton::clicked, this, [this]() { stackedWidget->setCurrentIndex(1); }); // Materiales y Acciones → Obra
+    connect(btnBack4, &QPushButton::clicked, this, [this]() { stackedWidget->setCurrentIndex(2); }); // Resumen → Materiales y Acciones
+    
+    connect(btnFinish, &QPushButton::clicked, this, [this]() { 
+        stackedWidget->setCurrentIndex(0); // Volver al inicio
+    });
+
+    // ==================== CONEXIONES DE FUNCIONALIDAD ====================
+    
+    // Conexiones de elevador
+    connect(cbElevador, &QComboBox::currentTextChanged, this, [=](const QString &elev){
+        bool enabled = (elev == "Si");
+        if (sbElevPortes) sbElevPortes->setEnabled(enabled);
+        if (spElevDia) spElevDia->setEnabled(enabled);
+        if (spElevPrecDia) spElevPrecDia->setEnabled(enabled);
+    });
+
+    // Conexiones de zona y dietas
+    connect(cbZona, &QComboBox::currentTextChanged, this, [=](const QString &zona){
+        if (zona == "Zona Centro") {
+            if (rbCorta) rbCorta->setEnabled(true);
+            if (rbMedia) rbMedia->setEnabled(true);
+            if (rbLarga) rbLarga->setEnabled(true);
+            if (cbDietasYes) {
+                cbDietasYes->setCurrentText("No");
+                cbDietasYes->setEnabled(false);
+            }
+            if (spDietas) spDietas->setEnabled(false);
+            if (spDiasDieta) spDiasDieta->setEnabled(false);
+        } else if (zona == "Otras Zonas") {
+            if (rbCorta) rbCorta->setEnabled(false);
+            if (rbMedia) rbMedia->setEnabled(false);
+            if (rbLarga) rbLarga->setEnabled(false);
+            if (cbDietasYes) {
+                cbDietasYes->setEnabled(true);
+                cbDietasYes->setCurrentText("Si");
+            }
+            if (spDietas) spDietas->setEnabled(true);
+            if (spDiasDieta) spDiasDieta->setEnabled(true);
+        }
+    });
+
+    // Sincronización dietas
+    auto syncGeneralFromDietas = [=]() {
+        if (cbDietasYes && cbDietasYes->currentText() == "Si") {
+            if (spOperarios && spDietas) spOperarios->setValue(spDietas->value());
+            if (spDias && spDiasDieta) spDias->setValue(spDiasDieta->value());
+            if (spOperarios) spOperarios->setEnabled(false);
+            if (spDias) spDias->setEnabled(false);
+        } else {
+            if (spOperarios) spOperarios->setEnabled(true);
+            if (spDias) spDias->setEnabled(true);
+        }
+    };
+
+    connect(cbDietasYes, &QComboBox::currentTextChanged, this, syncGeneralFromDietas);
+    connect(spDietas, QOverload<int>::of(&QSpinBox::valueChanged), this, [=](int val){
+        if (cbDietasYes && cbDietasYes->currentText() == "Si" && spOperarios) spOperarios->setValue(val);
+    });
+    connect(spDiasDieta, QOverload<int>::of(&QSpinBox::valueChanged), this, [=](int val){
+        if (cbDietasYes && cbDietasYes->currentText() == "Si" && spDias) spDias->setValue(val);
+    });
+    syncGeneralFromDietas();
+
+    // Combustible y distancia
+    connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+        this, &MainWindow::updateDistanceAndFuel);
+
+    // Materiales
+    connect(btnOpenMaterials, &QPushButton::clicked, this, &MainWindow::onOpenMaterialsWindow);
+    connect(btnAddMat, &QPushButton::clicked, this, [this]() {
+        bool ok;
+        QString materialName = QInputDialog::getText(this, "Nuevo material manual", "Nombre del material:", QLineEdit::Normal, "", &ok);
+        if (!ok || materialName.isEmpty()) return;
+
+        double sellPrice = QInputDialog::getDouble(this, "Nuevo material manual", "Precio de VENTA al cliente:", 0.0, 0, 1e6, 2, &ok);
+        if (!ok) return;
+        
+        double costPrice = QInputDialog::getDouble(this, "Nuevo material manual", "Precio de COMPRA (costo real):", sellPrice * 0.7, 0, 1e6, 2, &ok);
+        if (!ok) return;
+
+        if (!materialsManager) {
+            materialsManager = new MaterialsWindow(this);
+        }
+
+        materialsManager->addMaterialToMasterList("OTROS", materialName, sellPrice, costPrice);
+
+        int row = twMaterials->rowCount();
+        twMaterials->insertRow(row);
+        twMaterials->setItem(row, 0, new QTableWidgetItem(materialName));
+        twMaterials->setItem(row, 1, new QTableWidgetItem("1"));
+        twMaterials->setItem(row, 2, new QTableWidgetItem(QString::number(sellPrice, 'f', 2)));
+        twMaterials->setItem(row, 3, new QTableWidgetItem(QString::number(costPrice, 'f', 2)));
+        twMaterials->setItem(row, 4, new QTableWidgetItem(QString::number(sellPrice, 'f', 2)));
+
+        onCalculate();
+    });
+
+    connect(twMaterials, &QTableWidget::cellChanged, this, [this](int row, int column) {
+        if (column == 1) {
+            updateMaterialTotal(row);
+        }
+    });
+
+    connect(btnRemoveMat, &QPushButton::clicked, this, [this]() {
+        auto selectedRows = twMaterials->selectionModel()->selectedRows();
+        std::sort(selectedRows.begin(), selectedRows.end(), [](const QModelIndex &a, const QModelIndex &b){
+            return a.row() > b.row();
+        });
+
+        for (const auto &index : selectedRows) {
+            twMaterials->removeRow(index.row());
+        }
+        onCalculate();
+    });
+
+    // Botones de acción
+    connect(btnCalc, &QPushButton::clicked, this, &MainWindow::onCalculate);
+    connect(btnCalc, &QPushButton::clicked, this, &MainWindow::onCalculateDesviation);
+    connect(btnSave, &QPushButton::clicked, this, &MainWindow::onSaveBudget);
+    connect(btnEditPrices, &QPushButton::clicked, this, &MainWindow::onShowMaterialsList);
+    connect(btnPDF, &QPushButton::clicked, this, &MainWindow::onExportPDF);
+    connect(btnPrint, &QPushButton::clicked, this, &MainWindow::onPrintBudget);
+    connect(btnStart, &QPushButton::clicked, this, &MainWindow::onBackToStart);
+
+    // Totales
+    connect(btnToggleIVA, &QPushButton::toggled, this, &MainWindow::onToggleIVA);
+    connect(btnToggleImprevistos, &QPushButton::toggled, this, &MainWindow::onToggleImprevistos);
+
+    // ==================== CONEXIONES COLUMNA DERECHA ====================
+    connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadSelectedBudget);
+    connect(btnDelete, &QPushButton::clicked, this, &MainWindow::onDeleteSelectedBudget);
+    connect(btnClearFields, &QPushButton::clicked, this, &MainWindow::onDeleteFields);
+    connect(btnCloseProject, &QPushButton::clicked, this, &MainWindow::onCloseProject);
+    connect(btnPrice, &QPushButton::clicked, this, &MainWindow::onEditBasePrices);
+
+    // ==================== CONEXIONES DE RECÁLCULO AUTOMÁTICO ====================
+    
+    // CAMPOS DE OBRA
+    connect(sbMetros, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(cbTipoLocal, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    connect(cbTipoCubierta, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    
+    // DESPLAZAMIENTO Y COMBUSTIBLE
+    connect(sbKM, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(sbLitros, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+
+    // TIEMPOS
+    connect(sbHoras, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(sbHorasViaje, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(spDias, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(spOperarios, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    
+    // EXTRAS
+    connect(cbExtractor, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    connect(spFurgonetas, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(sbCosteFurgo, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+
+    // ELEVACIÓN
+    connect(cbElevador, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    connect(sbElevPortes, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(spElevDia, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(spElevPrecDia, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    
+    // ZONA, DISTANCIA Y DIETAS
+    connect(cbZona, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    connect(rbCorta, &QRadioButton::toggled, this, &MainWindow::onCalculate);
+    connect(rbMedia, &QRadioButton::toggled, this, &MainWindow::onCalculate);
+    connect(rbLarga, &QRadioButton::toggled, this, &MainWindow::onCalculate);
+    connect(cbDietasYes, &QComboBox::currentTextChanged, this, &MainWindow::onCalculate);
+    connect(spDietas, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(spDiasDieta, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    connect(sbPrecioDiet, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onCalculate);
+    
+    // TABLA DE MATERIALES
+    connect(twMaterials, &QTableWidget::cellChanged, this, [this](int row, int column) {
+        if (column == 1 || column == 2 || column == 3) { 
+            updateMaterialTotal(row);
+        }
+    });
+
+    // Stylesheet simple
+    central->setStyleSheet(R"(
+        QPushButton { 
+            min-height: 40px; 
+            font-size: 14px; 
+            padding: 10px;
+        }
+        QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox { 
+            min-height: 40px; 
+            font-size: 14px;
+            padding: 5px;
+        }
+        QLabel { 
+            font-size: 14px; 
+        }
+        QGroupBox {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        QTableWidget {
+            font-size: 13px;
+        }
+    )");
+
+    // ==================== CARGAR DATOS ====================
+    refreshBudgetsList();
+    setNextBudgetNumberAndDate();
+} */
+
 
 void MainWindow::onOpenMaterialsWindow()
 {
