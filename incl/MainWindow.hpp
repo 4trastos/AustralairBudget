@@ -10,7 +10,8 @@
 # include <QtPrintSupport/QPrintDialog>
 # include "MaterialsWindow.hpp"
 # include <QtPrintSupport/QPrintPreviewDialog>
-# include <QStackedWidget> 
+# include <QStackedWidget>
+# include <QIcon>
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;

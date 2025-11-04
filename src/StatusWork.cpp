@@ -423,7 +423,7 @@ void MainWindow::onCloseProject()
     qNewBudget.addBindValue(newClientId); // ⬅️ Nuevo Client ID (1)
     
     // Copiar los 22 campos restantes del presupuesto
-    for (int i = 0; i < 22; ++i) { 
+    for (int i = 0; i < 23; ++i) { 
         qNewBudget.addBindValue(qBudget.value(i)); // (2 a 23)
     }
     

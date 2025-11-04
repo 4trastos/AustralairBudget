@@ -60,7 +60,24 @@ bool MainWindow::updateExistingBudget(int budgetId)
     // Asegúrate de que los BindValues coincidan con el orden de las columnas en el UPDATE
     qb.addBindValue(cbTipoLocal->currentText());    
     qb.addBindValue(sbMetros->value());
-    // ... (resto de valores) ...
+    qb.addBindValue(cbTipoCubierta->currentText()); 
+    qb.addBindValue(cbExtractor->currentText());    
+    qb.addBindValue(cbElevador->currentText());     
+    qb.addBindValue(sbElevPortes->value());         
+    qb.addBindValue(spElevDia->value());            
+    qb.addBindValue(spElevPrecDia->value());        
+    qb.addBindValue(cbZona->currentText());         
+    qb.addBindValue(spDietas->value());             
+    qb.addBindValue(spDiasDieta->value());         
+    qb.addBindValue(sbPrecioDiet->value());         
+    qb.addBindValue(spFurgonetas->value());         
+    qb.addBindValue(sbCosteFurgo->value());         
+    qb.addBindValue(sbKM->value());                 
+    qb.addBindValue(sbLitros->value());             
+    qb.addBindValue(spOperarios->value());         
+    qb.addBindValue(spDias->value());               
+    qb.addBindValue(sbHoras->value());              
+    qb.addBindValue(sbHorasViaje->value());
     qb.addBindValue(base);                          
     qb.addBindValue(totalNoIva);                    
     qb.addBindValue(totalConIva);
